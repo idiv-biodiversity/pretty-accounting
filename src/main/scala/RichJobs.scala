@@ -6,12 +6,12 @@ import Accounting._
 
 object RichJobs extends RichJobs
 
-trait RichJobs extends Filtering {
+trait RichJobs {
   // TODO: jobs per 1.minute { _.slots }
-  implicit def jobspimp(l: GenSeq[Job]) = new JobsPimp(l)
-  implicit def jobcategorypimp[A](m: Map[A,GenSeq[Job]]) = new JobsCategoryPimp(m)
+  implicit def jobspimp(l: GenIterable[Job]) = new JobsPimp(l)
+  implicit def jobcategorypimp[A](m: GenMap[A,GenIterable[Job]]) = new JobsCategoryPimp(m)
 
-  class JobsPimp(jobs: GenSeq[Job]) {
+  class JobsPimp(jobs: GenIterable[Job]) {
     def perMinute[A](name: A)(f: Job => Double)
       (implicit start: DateTime = DateTime.now.withDayOfYear(1).withMillisOfDay(0),
                 end:   DateTime = DateTime.now,
@@ -34,7 +34,7 @@ trait RichJobs extends Filtering {
     def efficiency = Efficiency.efficiency(jobs)
   }
 
-  class JobsCategoryPimp[A](categories: Map[A,GenSeq[Job]]) {
+  class JobsCategoryPimp[A](categories: GenMap[A,GenIterable[Job]]) {
     def perMinute(name: String)(f: Job => Double)
       (implicit start: DateTime = DateTime.now.withDayOfYear(1).withMillisOfDay(0),
                 end:   DateTime = DateTime.now,
@@ -42,7 +42,7 @@ trait RichJobs extends Filtering {
       val dataset = new TimeTableXYDataset()
 
       for {
-        category <- categories.keys
+        category <- categories map { _._1 }
         jobs     =  categories(category)
         series   =  jobs.perMinute(category)(f)(start,end,ord)
         item     <- series.getItems map { _.asInstanceOf[TimeSeriesDataItem] }

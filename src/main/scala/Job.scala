@@ -1,6 +1,6 @@
 package grid
 
-import org.scala_tools.time.Imports._
+import Accounting._
 
 object Job {
 

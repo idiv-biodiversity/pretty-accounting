@@ -12,21 +12,22 @@ trait Accounting extends TypeImports with StaticImports
     sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
 
   def defaultAccountingFileLines =
-    io.Source.fromFile(defaultAccountingFilePath).getLines.toList
+    io.Source.fromFile(defaultAccountingFilePath).getLines.toIterable.par
 
-  def load(implicit lines: List[String] = defaultAccountingFileLines) = lines collect {
+  def load(implicit lines: GenIterable[String] = defaultAccountingFileLines) = lines collect {
     case AccountingEntry(job) => job
   }
 
-  def filtered(implicit lines: List[String] = defaultAccountingFileLines) =
+  def filtered(implicit lines: GenIterable[String] = defaultAccountingFileLines) =
     load filter combined
 
-  def linesNotMatching(implicit lines: List[String] = defaultAccountingFileLines) =
+  def linesNotMatching(implicit lines: GenIterable[String] = defaultAccountingFileLines) =
     lines filterNot { AccountingEntry.unapply(_).isDefined }
 }
 
 trait TypeImports {
-  type GenSeq[A]          = scala.collection.GenSeq[A]
+  type GenIterable[A]     = scala.collection.GenIterable[A]
+  type GenMap[A,B]        = scala.collection.GenMap[A,B]
 
   type ChartFrame         = org.jfree.chart.ChartFrame
   type JFreeChart         = org.jfree.chart.JFreeChart

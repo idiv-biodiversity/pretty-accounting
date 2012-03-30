@@ -10,6 +10,7 @@ trait TimeImplicits extends org.scala_tools.time.Imports {
 
   class IntervalPimp(interval: Interval) {
     import org.joda.time.ReadablePeriod
+
     def by(d: ReadablePeriod) = {
       val coll = collection.mutable.ListBuffer[DateTime]()
 
