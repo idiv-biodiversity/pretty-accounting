@@ -6,8 +6,8 @@ object Efficiency extends Efficiency
 
 trait Efficiency {
   def efficiency(jobs: GenIterable[Job]) =
-    (jobs map { j => (j.resourceUsage.utime.toDouble / j.slots) } sum) /
-    (jobs map { j =>  j.resourceUsage.wallclock.toLong } sum)
+    (jobs map { j => (j.resourceUsage.utime / j.slots) } sum) /
+    (jobs map { j =>  j.resourceUsage.wallclock } sum)
 
   def efficiencyGroupedBy[A](jobs: GenIterable[Job])(f: Job => A) = for {
     (group,jobs) <- jobs groupBy f

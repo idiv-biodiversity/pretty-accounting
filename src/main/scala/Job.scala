@@ -48,50 +48,67 @@ object Job {
       val parts = s split ":"
       ResourceUsage(
         wallclock = parts(0).toLong,
-        utime     = parts(1),
-        stime     = parts(2),
-        maxrss    = parts(3),
-        ixrss     = parts(4),
-        ismrss    = parts(5),
-        idrss     = parts(6),
-        isrss     = parts(7),
-        minflt    = parts(8),
-        majflt    = parts(9),
-        nswap     = parts(10),
-        inblock   = parts(11),
-        oublock   = parts(12),
-        msgsnd    = parts(13),
-        msgrcv    = parts(14),
-        nsignals  = parts(15),
-        nvcsw     = parts(16),
-        nivcsw    = parts(17)
+        utime     = parts(1).toDouble,
+        stime     = parts(2).toDouble,
+        maxrss    = parts(3).toDouble,
+        ixrss     = parts(4).toLong,
+        ismrss    = parts(5).toLong,
+        idrss     = parts(6).toLong,
+        isrss     = parts(7).toLong,
+        minflt    = parts(8).toLong,
+        majflt    = parts(9).toLong,
+        nswap     = parts(10).toLong,
+        inblock   = parts(11).toDouble,
+        oublock   = parts(12).toLong,
+        msgsnd    = parts(13).toLong,
+        msgrcv    = parts(14).toLong,
+        nsignals  = parts(15).toLong,
+        nvcsw     = parts(16).toLong,
+        nivcsw    = parts(17).toLong
       )
     }
   }
 
   /**
     *
-    * @param  wallclock  wallclock time in seconds
+    * @param  wallclock   wallclock time in seconds
+    * @param  utime       user time
+    * @param  stime       system time
+    * @param  maxrss      maximum resident set size
+    * @param  ixrss       integral shared memory size
+    * @param  ismrss      
+    * @param  idrss       integral unshared data size
+    * @param  isrss       integral unshared stack size
+    * @param  minflt      page reclaims
+    * @param  majflt      page faults
+    * @param  nswap       swaps
+    * @param  inblock     block input operations
+    * @param  oublock     block output operations
+    * @param  msgsnd      messages sent
+    * @param  msgrcv      messages received
+    * @param  nsignals    signals received
+    * @param  nvcsw       voluntary context switches
+    * @param  nivcsw      involuntary context switches
     */
   case class ResourceUsage (
       wallclock: Long,
-      utime: String,
-      stime: String,
-      maxrss: String,
-      ixrss: String,
-      ismrss: String,
-      idrss: String,
-      isrss: String,
-      minflt: String,
-      majflt: String,
-      nswap: String,
-      inblock: String,
-      oublock: String,
-      msgsnd: String,
-      msgrcv: String,
-      nsignals: String,
-      nvcsw: String,
-      nivcsw: String
+      utime: Double,
+      stime: Double,
+      maxrss: Double,
+      ixrss: Long,
+      ismrss: Long,
+      idrss: Long,
+      isrss: Long,
+      minflt: Long,
+      majflt: Long,
+      nswap: Long,
+      inblock: Double,
+      oublock: Long,
+      msgsnd: Long,
+      msgrcv: Long,
+      nsignals: Long,
+      nvcsw: Long,
+      nivcsw: Long
     )
 
   object Acl {
