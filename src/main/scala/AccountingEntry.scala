@@ -10,9 +10,9 @@ object AccountingEntry {
   private[grid] val accountingEntryRE = """([^:]+):([^:]+):([^:]+:[^:]+):([^:]+:[^:]+):([^:]+):([^:]+):([^:]+:[^:]+:[^:]+):([^:]+:[^:]+):([^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+:[^:]+):([^:]+:[^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):(.+):([^:]+):([^:]+):([^:]+):([^:]+:[^:]+)"""r
 
   def unapply(s: String) = s match {
-    case accountingEntryRE(queue, node, user, jobId, account, priority, time, status, resourceUsage,
-    acl, parallelEnvironment, slots, taskNumber, cpu, mem, io, resourceRequest, iow, parallelTaskId,
-    maxvmem, reservation) =>
+    case accountingEntryRE(queue, node, user, jobId, account, priority, time, status, res, acl,
+    parallelEnvironment, slots, taskNumber, cpu, mem, io, resReq, iow, parallelTaskId, maxvmem,
+    reservation) =>
 
   // q host u() j() acc prio t() fail exit ru() acl() pe slots taskid cpu mem io resreq iow pe_id maxvmem ar()
     Some(Job(
@@ -24,11 +24,11 @@ object AccountingEntry {
       priority.toDouble,
       Time(time),
       Status(status),
-      ResourceUsage(resourceUsage),
+      ResourceUsage(res),
       Acl(acl),
       parallelEnvironment match { case NONE => None ; case s => Some(s) },
       slots.toInt,
-      resourceRequest match { case NONE => None ; case s => Some(s) },
+      resReq match { case NONE => None ; case s => Some(s) },
       parallelTaskId match { case NONE => None ; case s => Some(s.toInt) },
       Reservation(reservation)
     ))

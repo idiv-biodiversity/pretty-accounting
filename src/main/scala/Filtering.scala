@@ -20,7 +20,7 @@ trait Filtering {
 
   def realJob(j: Job) = j.queue.nonEmpty && j.node.nonEmpty  && (j.time.submission != epochstart)
 
-  def wasRunning(j: Job) = j.resourceUsage.wallclock > 0
+  def wasRunning(j: Job) = j.res.wctime > 0
 
   def combined(j: Job) = nonAdminAndExternalGIDs(j) && realJob(j)
 }

@@ -47,7 +47,7 @@ object Job {
     def apply(s: String): ResourceUsage = {
       val parts = s split ":"
       ResourceUsage(
-        wallclock = parts(0).toLong,
+        wctime    = parts(0).toLong,
         utime     = parts(1).toDouble,
         stime     = parts(2).toDouble,
         maxrss    = parts(3).toDouble,
@@ -71,7 +71,7 @@ object Job {
 
   /**
     *
-    * @param  wallclock   wallclock time in seconds
+    * @param  wctime      wallclock time in seconds
     * @param  utime       user time
     * @param  stime       system time
     * @param  maxrss      maximum resident set size
@@ -91,7 +91,7 @@ object Job {
     * @param  nivcsw      involuntary context switches
     */
   case class ResourceUsage (
-      wallclock: Long,
+      wctime: Long,
       utime: Double,
       stime: Double,
       maxrss: Double,
@@ -109,7 +109,9 @@ object Job {
       nsignals: Long,
       nvcsw: Long,
       nivcsw: Long
-    )
+    ) {
+    def cputime = utime + stime
+  }
 
   object Acl {
     def apply(s: String): Acl = {
@@ -142,11 +144,11 @@ case class Job (
     priority: Double,
     time: Time,
     status: Status,
-    resourceUsage: ResourceUsage,
+    res: ResourceUsage,
     acl: Acl,
     parallelEnvironment: Option[String],
     slots: Int,
-    resourceRequest: Option[String],
+    resReq: Option[String],
     parallelTaskId: Option[Int],
     reservation: Reservation
   )
