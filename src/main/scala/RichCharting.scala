@@ -1,13 +1,11 @@
 package grid
 
-import Accounting._
-
 import org.jfree.chart.ChartFactory._
 import org.jfree.chart.plot.PlotOrientation._
 
 object RichCharting extends RichCharting
 
-trait RichCharting {
+trait RichCharting extends TypeImports with StaticImports {
   implicit def joda2jfreeminute(d: DateTime) = new org.jfree.data.time.Minute(d.toDate)
 
   def show(chart: JFreeChart)(implicit title: String = "") = onEDT {

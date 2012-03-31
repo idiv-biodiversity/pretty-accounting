@@ -1,7 +1,5 @@
 package grid
 
-import Accounting._
-
 object Filtering extends Filtering
 
 trait Filtering {

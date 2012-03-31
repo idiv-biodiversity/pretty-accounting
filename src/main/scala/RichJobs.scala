@@ -2,11 +2,9 @@ package grid
 
 import scala.collection.JavaConversions._
 
-import Accounting._
-
 object RichJobs extends RichJobs
 
-trait RichJobs {
+trait RichJobs extends RichCharting with Filtering with TimeImplicits {
   // TODO: jobs per 1.minute { _.slots }
   implicit def jobspimp(l: GenIterable[Job]) = new JobsPimp(l)
   implicit def jobcategorypimp[A](m: GenMap[A,GenIterable[Job]]) = new JobsCategoryPimp(m)

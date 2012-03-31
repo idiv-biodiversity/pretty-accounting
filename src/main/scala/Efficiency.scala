@@ -1,10 +1,8 @@
 package grid
 
-import Accounting._
-
 object Efficiency extends Efficiency
 
-trait Efficiency {
+trait Efficiency extends TypeImports {
   def efficiency(jobs: GenIterable[Job]) = {
     val utimeSum  = jobs map { j => (j.res.utime / j.slots) } sum
     val wctimeSum = jobs map { _.res.wctime } sum

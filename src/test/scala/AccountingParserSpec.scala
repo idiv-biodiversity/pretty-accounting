@@ -16,8 +16,8 @@ class AccountingParserSpec extends Specification { def is =
   // tests
   // -----------------------------------------------------------------------
 
-  def e1 = AccountingEntry.unapply(validAccountingEntry) must beSome
-  def e2 = AccountingEntry.unapply(entryResourceRequestContainsColon) must beSome
+  def e1 = Parsing.AccountingEntry.unapply(validAccountingEntry) must beSome
+  def e2 = Parsing.AccountingEntry.unapply(entryResourceRequestContainsColon) must beSome
 
   // -----------------------------------------------------------------------
   // utility functions

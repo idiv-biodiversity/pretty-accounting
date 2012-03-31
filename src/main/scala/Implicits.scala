@@ -5,7 +5,7 @@ object TimeImplicits extends TimeImplicits
 
 trait Implicits extends TimeImplicits
 
-trait TimeImplicits extends org.scala_tools.time.Imports {
+trait TimeImplicits {
   implicit def intervalpimp(interval: Interval) = new IntervalPimp(interval)
 
   class IntervalPimp(interval: Interval) {

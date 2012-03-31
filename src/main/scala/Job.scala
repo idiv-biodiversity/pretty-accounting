@@ -1,7 +1,5 @@
 package grid
 
-import Accounting._
-
 object Job {
 
   object JobId {
