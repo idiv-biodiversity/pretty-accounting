@@ -42,7 +42,7 @@ trait Parsing extends Filtering with TypeImports {
         priority.toDouble,
         Time(time),
         Status(status),
-        ResourceUsage(res),
+        ResourceUsage(res,cpu,mem,maxvmem,io,iow),
         Acl(acl),
         parallelEnvironment match { case NONE => None ; case s => Some(s) },
         slots.toInt,

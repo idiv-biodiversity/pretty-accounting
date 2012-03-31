@@ -42,7 +42,7 @@ object Job {
   }
 
   object ResourceUsage {
-    def apply(s: String): ResourceUsage = {
+    def apply(s: String, cpu: String, mem: String, maxvmem: String, io: String, iow: String): ResourceUsage = {
       val parts = s split ":"
       ResourceUsage(
         wctime    = parts(0).toLong,
@@ -50,19 +50,24 @@ object Job {
         stime     = parts(2).toDouble,
         maxrss    = parts(3).toDouble,
         ixrss     = parts(4).toLong,
-        ismrss    = parts(5).toLong,
+//        ismrss    = parts(5).toLong,
         idrss     = parts(6).toLong,
         isrss     = parts(7).toLong,
         minflt    = parts(8).toLong,
         majflt    = parts(9).toLong,
         nswap     = parts(10).toLong,
-        inblock   = parts(11).toDouble,
+        inblock   = parts(11).toDouble.round,
         oublock   = parts(12).toLong,
         msgsnd    = parts(13).toLong,
         msgrcv    = parts(14).toLong,
         nsignals  = parts(15).toLong,
         nvcsw     = parts(16).toLong,
-        nivcsw    = parts(17).toLong
+        nivcsw    = parts(17).toLong,
+        cputime   = cpu.toDouble,
+        mem       = mem.toDouble,
+        maxvmem   = maxvmem.toDouble.round,
+        io        = io.toDouble,
+        iow       = iow.toDouble
       )
     }
   }
@@ -87,6 +92,11 @@ object Job {
     * @param  nsignals    signals received
     * @param  nvcsw       voluntary context switches
     * @param  nivcsw      involuntary context switches
+    * @param  cputime     cpu time usage in seconds
+    * @param  mem         integral memory usage in Gbytes cpu seconds
+    * @param  maxvmem     maximum vmem size in bytes
+    * @param  io          amount of data transferred in input/output operations
+    * @param  iow         io wait time in seconds
     */
   case class ResourceUsage (
       wctime: Long,
@@ -94,21 +104,28 @@ object Job {
       stime: Double,
       maxrss: Double,
       ixrss: Long,
-      ismrss: Long,
+//      ismrss: Long,
       idrss: Long,
       isrss: Long,
       minflt: Long,
       majflt: Long,
       nswap: Long,
-      inblock: Double,
+      inblock: Long,
       oublock: Long,
       msgsnd: Long,
       msgrcv: Long,
       nsignals: Long,
       nvcsw: Long,
-      nivcsw: Long
+      nivcsw: Long,
+      cputime: Double,
+      mem: Double,
+      maxvmem: Long,
+      io: Double,
+      iow: Double
     ) {
-    def cputime = utime + stime
+
+    /** Returns the number of context switches, voluntary and involuntary. */
+    def ncsw = nvcsw + nivcsw
   }
 
   object Acl {
