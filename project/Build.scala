@@ -39,7 +39,7 @@ object PrettyAccountingBuild extends Build {
       initialCommands in Compile in console += """
         import grid.Accounting._
       """,
-      libraryDependencies ++= Seq ( chart, pdf, swing, time, specs2 )
+      libraryDependencies ++= Seq ( chart, pdf, swing, time, specs2, iocore, iofile )
     )
   )
 
@@ -51,4 +51,6 @@ object Dependencies {
   lazy val swing  = "org.scala-lang"       %  "scala-swing" % buildScalaVersion
   lazy val time   = "org.scala-tools.time" %% "time"        % "0.5"
   lazy val specs2 = "org.specs2"           %% "specs2"      % "1.8.2" % "test"
+  lazy val iocore = "com.github.scala-incubator.io" %% "scala-io-core" % "0.4-SNAPSHOT"
+  lazy val iofile = "com.github.scala-incubator.io" %% "scala-io-file" % "0.4-SNAPSHOT"
 }

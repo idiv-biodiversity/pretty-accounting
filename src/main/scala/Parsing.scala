@@ -7,14 +7,14 @@ trait Parsing extends Filtering with TypeImports {
     sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
 
   def defaultAccountingFileLines =
-    io.Source.fromFile(defaultAccountingFilePath).getLines.toIterable.par
+    scalax.io.Resource.fromFile(defaultAccountingFilePath).lines().toIterable.par
 
-  def load(implicit lines: GenIterable[String] = defaultAccountingFileLines) = lines collect {
+  def raw(implicit lines: GenIterable[String] = defaultAccountingFileLines) = lines collect {
     case AccountingEntry(job) => job
   }
 
-  def filtered(implicit lines: GenIterable[String] = defaultAccountingFileLines) =
-    load filter combined
+  def jobs(implicit lines: GenIterable[String] = defaultAccountingFileLines) =
+    raw filter combined
 
   def linesNotMatching(implicit lines: GenIterable[String] = defaultAccountingFileLines) =
     lines filterNot { AccountingEntry.unapply(_).isDefined }

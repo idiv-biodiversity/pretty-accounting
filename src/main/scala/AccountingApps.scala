@@ -1,8 +1,6 @@
 package grid
 
-trait AccountingApp extends App with Accounting {
-  def jobs = filtered.par
-}
+trait AccountingApp extends App with Accounting
 
 object EfficiencyByUser extends AccountingApp {
   (efficiencyGroupedBy(jobs) { _.user.uid } toList) sortBy { _._3 } map formatted foreach println
