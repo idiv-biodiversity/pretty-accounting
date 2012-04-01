@@ -10,12 +10,7 @@ object BuildSettings {
 
   val buildSettings = Defaults.defaultSettings ++ Seq (
     version              := buildVersion,
-    scalaVersion         := buildScalaVersion,
-    resolvers           ++= Seq (
-      "releases"              at "http://oss.sonatype.org/content/repositories/releases",
-      "snapshots"             at "http://oss.sonatype.org/content/repositories/snapshots",
-      "ScalaNLP Maven2"       at "http://repo.scalanlp.org/repo"
-    )
+    scalaVersion         := buildScalaVersion
   )
 }
 
@@ -28,7 +23,6 @@ object PrettyAccountingBuild extends Build {
       initialCommands in Compile += """
         import scala.math._
         import scala.swing.Swing._
-        import scala.sys.process._
         import org.scala_tools.time.Imports._
         import org.jfree.chart._
         import org.jfree.chart.ChartFactory._
@@ -39,6 +33,9 @@ object PrettyAccountingBuild extends Build {
       initialCommands in Compile in console += """
         import grid.Accounting._
       """,
+      resolvers ++= Seq (
+        "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
+      ),
       libraryDependencies ++= Seq ( chart, pdf, swing, time, specs2, iocore, iofile )
     )
   )
