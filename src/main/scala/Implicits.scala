@@ -1,9 +1,14 @@
 package grid
 
 object Implicits extends Implicits
+object FileImplicits extends FileImplicits
 object TimeImplicits extends TimeImplicits
 
-trait Implicits extends TimeImplicits
+trait Implicits extends FileImplicits with TimeImplicits
+
+trait FileImplicits {
+  implicit def string2file(s: String) = new java.io.File(s)
+}
 
 trait TimeImplicits {
   implicit def intervalpimp(interval: Interval) = new IntervalPimp(interval)

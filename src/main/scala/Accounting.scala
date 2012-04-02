@@ -26,4 +26,5 @@ trait TypeImports {
 
 trait StaticImports {
   def onEDT(f: => Unit) = scala.swing.Swing.onEDT(f)
+  def fileSeparator = java.io.File.separator
 }
