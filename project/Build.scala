@@ -21,6 +21,8 @@ object PrettyAccountingBuild extends Build {
     base     = file("."),
     settings = buildSettings ++ Seq (
       initialCommands in Compile += """
+        import scalaz._
+        import Scalaz._
         import scala.math._
         import scala.swing.Swing._
         import org.scala_tools.time.Imports._
@@ -36,7 +38,7 @@ object PrettyAccountingBuild extends Build {
       resolvers ++= Seq (
         "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
       ),
-      libraryDependencies ++= Seq ( chart, pdf, swing, time, specs2, iocore, iofile )
+      libraryDependencies ++= Seq ( chart, pdf, swing, time, specs2, iocore, iofile, scalaz )
     )
   )
 
@@ -47,6 +49,7 @@ object Dependencies {
   lazy val pdf    = "com.lowagie"          %  "itext"       % "2.1.7"
   lazy val swing  = "org.scala-lang"       %  "scala-swing" % buildScalaVersion
   lazy val time   = "org.scala-tools.time" %% "time"        % "0.5"
+  lazy val scalaz = "org.scalaz"           %% "scalaz-core" % "6.0.4"
   lazy val specs2 = "org.specs2"           %% "specs2"      % "1.8.2" % "test"
   lazy val iocore = "com.github.scala-incubator.io" %% "scala-io-core" % "0.4-SNAPSHOT"
   lazy val iofile = "com.github.scala-incubator.io" %% "scala-io-file" % "0.4-SNAPSHOT"

@@ -1,7 +1,5 @@
 package grid
 
-import scala.collection.JavaConversions._
-
 object RichJobs extends RichJobs
 
 trait RichJobs extends RichCharting with Filtering with TimeImplicits {
@@ -9,44 +7,69 @@ trait RichJobs extends RichCharting with Filtering with TimeImplicits {
   implicit def jobspimp(l: GenIterable[Job]) = new JobsPimp(l)
   implicit def jobcategorypimp[A](m: GenMap[A,GenIterable[Job]]) = new JobsCategoryPimp(m)
 
+  def timeslots(jobs: GenIterable[Job])(f: Job => Double)
+    (implicit start: DateTime = DateTime.now.withDayOfYear(1).withMillisOfDay(0),
+              end:   DateTime = DateTime.now): Map[DateTime,Double] = {
+    import scalaz.Scalaz._
+
+    val ts: GenIterable[Map[DateTime,Double]] = for {
+      job    <- jobs filter { isBetween(_)(start,end) }
+      start  =  job.time.start withSecondOfMinute 0
+      end    =  job.time.end   withSecondOfMinute 0
+      data   =  f(job)
+    } yield (start to end by 1.minute map { //if (time isAfter start) && (time isBefore end)
+      _ -> data
+    } toMap)
+
+    ts.fold(Map())(_ |+| _)
+  }
+
   class JobsPimp(jobs: GenIterable[Job]) {
-    def perMinute[A](name: A)(f: Job => Double)
+    def perMinute(f: Job => Double)
       (implicit start: DateTime = DateTime.now.withDayOfYear(1).withMillisOfDay(0),
-                end:   DateTime = DateTime.now,
-                ord:   Ordering[A]) = {
-      import scala.math.Ordered._
-      val dataset = new TimeSeries(name)
-
-      for {
-        job    <- jobs filter { isBetween(_)(start,end) }
-        start  =  job.time.start
-        end    =  job.time.end
-        data   =  f(job)
-        time   <- start to end by 1.minute //if (time isAfter start) && (time isBefore end)
-        old    =  dataset getValue time
-      } dataset addOrUpdate (time, if (old == null) data else (data + old.doubleValue))
-
+                end:   DateTime = DateTime.now) = {
+      val dataset = new TimeSeries("")
+      timeslots(jobs)(f)(start,end).seq foreach { kv =>
+        dataset.add(kv._1,kv._2)
+      }
       dataset
     }
 
     def efficiency = Efficiency.efficiency(jobs)
   }
 
-  class JobsCategoryPimp[A](categories: GenMap[A,GenIterable[Job]]) {
-    def perMinute(name: String)(f: Job => Double)
+  class JobsCategoryPimp[A](groupedJobs: GenMap[A,GenIterable[Job]]) {
+    def perMinute(f: Job => Double)
       (implicit start: DateTime = DateTime.now.withDayOfYear(1).withMillisOfDay(0),
-                end:   DateTime = DateTime.now,
-                ord:   Ordering[A]) = {
+                end:   DateTime = DateTime.now) = {
       val dataset = new TimeTableXYDataset()
 
       for {
-        category <- categories map { _._1 }
-        jobs     =  categories(category)
-        series   =  jobs.perMinute(category)(f)(start,end,ord)
-        item     <- series.getItems map { _.asInstanceOf[TimeSeriesDataItem] }
-        period   =  item.getPeriod
-        value    =  item.getValue.doubleValue
-      } dataset add (period, value, category.toString)
+        group         <-  groupedJobs.seq map { _._1 } // replace with keys (requires newer scala)
+        jobs          =   groupedJobs(group)
+        (time,value)  <-  timeslots(jobs)(f)(start,end)
+      } dataset add (time, value, group.toString)
+
+      dataset
+    }
+
+    def perMinuteWithAverage(f: Job => Double)
+      (implicit start: DateTime = DateTime.now.withDayOfYear(1).withMillisOfDay(0),
+                end:   DateTime = DateTime.now,
+                avg:   Int) = {
+      import org.jfree.data.time.MovingAverage._
+      import scala.collection.JavaConversions._
+
+      val dataset = new TimeTableXYDataset()
+
+      for {
+        group   <-  groupedJobs.seq map { _._1 } // replace with keys (requires newer scala)
+        jobs    =   groupedJobs(group)
+        series  =   createMovingAverage(jobs.perMinute(f)(start,end), "", avg, avg)
+        item    <-  series.getItems map { _.asInstanceOf[TimeSeriesDataItem] }
+        period  =   item.getPeriod
+        value   =   item.getValue.doubleValue
+      } dataset add (period, value, group.toString)
 
       dataset
     }
