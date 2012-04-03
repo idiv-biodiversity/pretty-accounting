@@ -27,8 +27,12 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
     }
 
     def efficiency(f: Job => Double)(implicit interval: Option[Interval]) = {
-      val fSum      = jobs map f sum
-      val wctimeSum = jobs map { _.res.wctime } sum
+      val filtered = interval map { implicit interval =>
+        jobs filter { isBetween(_) }
+      } getOrElse(jobs)
+
+      val fSum      = filtered map f sum
+      val wctimeSum = filtered map { _.res.wctime } sum
 
       fSum / wctimeSum
     }

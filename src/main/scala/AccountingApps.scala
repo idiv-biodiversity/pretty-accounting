@@ -4,17 +4,12 @@ import org.jfree.chart.ChartUtilities._
 import scalaz.Scalaz._
 
 trait AccountingApp extends App with Accounting {
-  lazy val start = sys.props get "chart.start" flatMap { _ toDateTimeOption } orElse {
-    Some(0L.toDateTime)
-  }
+  def dispatched = jobs filter isDispatched
 
-  lazy val end   = sys.props get "chart.end"   flatMap { _ toDateTimeOption } orElse {
-    Some(DateTime.now)
-  }
+  lazy val start = sys.props get "chart.start" flatMap { _ toDateTimeOption }
+  lazy val end   = sys.props get "chart.end"   flatMap { _ toDateTimeOption }
 
-  implicit lazy val interval = (start |@| end) {
-    _ to _
-  }
+  implicit lazy val interval = (start |@| end) { _ to _ }
 }
 
 trait EfficiencyApp extends AccountingApp {
@@ -28,11 +23,11 @@ trait EfficiencyApp extends AccountingApp {
 }
 
 object EfficiencyByUser extends EfficiencyApp {
-  (jobs groupBy { _.user.uid } efficiency).toList sortBy { _._3 } map formatted foreach println
+  (dispatched groupBy { _.user.uid } efficiency).toList sortBy { _._3 } map formatted foreach println
 }
 
 object EfficiencyByGroup extends EfficiencyApp {
-  (jobs groupBy { _.user.gid } efficiency).toList sortBy { _._3 } map formatted foreach println
+  (dispatched groupBy { _.user.gid } efficiency).toList sortBy { _._3 } map formatted foreach println
 }
 
 trait ChartingApp extends AccountingApp {
@@ -58,7 +53,7 @@ trait ChartingApp extends AccountingApp {
 object SlotsPerQueue extends ChartingApp {
   override lazy val name = "Slots per Queue"
 
-  val dataset = jobs filter wasRunning groupBy { _.queue.get } toTimeslots { _.slots }
+  val dataset = dispatched groupBy { _.queue.get } toTimeslots { _.slots }
   val chart   = createTimeSeriesStackedAreaChart(dataset, name)
 
   saveChartAsPNG(output, chart, width, height)
@@ -67,7 +62,7 @@ object SlotsPerQueue extends ChartingApp {
 object SlotsSequentialVsParallel extends ChartingApp {
   override lazy val name = "Slots - Sequential vs. Parallel"
 
-  val dataset = jobs filter wasRunning groupBy { j =>
+  val dataset = dispatched groupBy { j =>
     if (parallel(j)) "parallel" else "sequential"
   } toTimeslots { _.slots }
 
