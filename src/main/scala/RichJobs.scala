@@ -3,13 +3,13 @@ package grid
 object RichJobs extends RichJobs
 
 trait RichJobs extends Filtering with RichTime with TypeImports {
-  // TODO: jobs per 1.minute { _.slots }
+  // TODO toTimeslots with variable slot period
   implicit def jobspimp(l: GenIterable[Job]) = new JobsPimp(l)
   implicit def jobcategorypimp[A](m: GenMap[A,GenIterable[Job]]) = new JobsCategoryPimp(m)
 
   class JobsPimp(jobs: GenIterable[Job]) {
     def toTimeslots(f: Job => Double)
-                   (implicit interval: Option[Interval] = Some(thisYear)): Map[DateTime,Double] = {
+                   (implicit interval: Option[Interval]): Map[DateTime,Double] = {
       import scalaz.Scalaz._
 
       val ts: GenIterable[Map[DateTime,Double]] = for {
@@ -26,13 +26,25 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
       ts.fold(Map())(_ |+| _)
     }
 
-    def efficiency = Efficiency.efficiency(jobs)
+    def efficiency(f: Job => Double)(implicit interval: Option[Interval]) = {
+      val fSum      = jobs map f sum
+      val wctimeSum = jobs map { _.res.wctime } sum
+
+      fSum / wctimeSum
+    }
   }
 
   class JobsCategoryPimp[A](groupedJobs: GenMap[A,GenIterable[Job]]) {
     def toTimeslots(f: Job => Double)
-                   (implicit interval: Option[Interval] = Some(thisYear)): Map[A,Map[DateTime,Double]] =
+                   (implicit interval: Option[Interval]): Map[A,Map[DateTime,Double]] =
       // TODO mapValues (requires newer scala)
       groupedJobs.map(kv => kv._1 -> kv._2.toTimeslots(f)).seq.toMap
+
+    def efficiency(implicit interval: Option[Interval]) = for {
+      (group,jobs) <- groupedJobs
+      numjobs      =  jobs.size
+      ueff         =  jobs.efficiency { j => (j.res.utime   / j.slots) }
+      useff        =  jobs.efficiency { j => (j.res.cputime / j.slots) }
+    } yield (group,numjobs,ueff,useff)
   }
 }

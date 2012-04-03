@@ -7,7 +7,7 @@ object Implicits extends Implicits
 object FileImplicits extends FileImplicits
 
 trait Accounting extends TypeImports with StaticImports
-  with Parsing with Filtering with Efficiency with RichCharting with RichJobs
+  with Parsing with Filtering with RichCharting with RichJobs
   with Implicits {
 }
 
