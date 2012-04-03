@@ -5,12 +5,12 @@ import Dependencies._
 import BuildSettings._
 
 object BuildSettings {
-  val buildVersion      = "0.0.1-SNAPSHOT"
-  val buildScalaVersion = "2.9.1"
+  lazy val buildVersion      = "0.0.1-SNAPSHOT"
+  lazy val buildScalaVersion = "2.9.1"
 
-  val buildSettings = Defaults.defaultSettings ++ Seq (
-    version              := buildVersion,
-    scalaVersion         := buildScalaVersion
+  lazy val buildSettings = Defaults.defaultSettings ++ Seq (
+    version      := buildVersion,
+    scalaVersion := buildScalaVersion
   )
 }
 
@@ -18,7 +18,12 @@ object PrettyAccountingBuild extends Build {
 
   lazy val root = Project (
     id       = "pretty-accounting",
-    base     = file("."),
+    base     = file(".")
+  ) aggregate ( core, efficiencyByUser, efficiencyByGroup, slotsPerQueue, slotsSeqVsPar )
+
+  lazy val core = Project (
+    id       = "pretty-accounting-core",
+    base     = file("core"),
     settings = buildSettings ++ Seq (
       initialCommands in Compile += """
         import scalaz._
@@ -41,6 +46,26 @@ object PrettyAccountingBuild extends Build {
       libraryDependencies ++= Seq ( chart, pdf, swing, time, specs2, iocore, iofile, scalaz )
     )
   )
+
+  lazy val efficiencyByUser = Project (
+    id   = "efficiency-by-user",
+    base = file("efficiency-by-user")
+  ) dependsOn ( core )
+
+  lazy val efficiencyByGroup = Project (
+    id   = "efficiency-by-group",
+    base = file("efficiency-by-group")
+  ) dependsOn ( core )
+
+  lazy val slotsPerQueue = Project (
+    id   = "slots-per-queue",
+    base = file("slots-per-queue")
+  ) dependsOn ( core )
+
+  lazy val slotsSeqVsPar = Project (
+    id   = "slots-seq-vs-par",
+    base = file("slots-seq-vs-par")
+  ) dependsOn ( core )
 
 }
 

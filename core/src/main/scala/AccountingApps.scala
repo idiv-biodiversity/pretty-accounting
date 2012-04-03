@@ -1,6 +1,5 @@
 package grid
 
-import org.jfree.chart.ChartUtilities._
 import scalaz.Scalaz._
 
 trait AccountingApp extends App with Accounting {
@@ -20,14 +19,6 @@ trait EfficiencyApp extends AccountingApp {
       (t._3 * 10000).round / 100.0,     //  utime
       (t._4 * 10000).round / 100.0      //  utime + stime
     )
-}
-
-object EfficiencyByUser extends EfficiencyApp {
-  (dispatched groupBy { _.user.uid } efficiency).toList sortBy { _._3 } map formatted foreach println
-}
-
-object EfficiencyByGroup extends EfficiencyApp {
-  (dispatched groupBy { _.user.gid } efficiency).toList sortBy { _._3 } map formatted foreach println
 }
 
 trait ChartingApp extends AccountingApp {
@@ -54,25 +45,4 @@ trait ChartingApp extends AccountingApp {
     width,
     height
   )
-}
-
-object SlotsPerQueue extends ChartingApp {
-  override lazy val name = "Slots per Queue"
-
-  val dataset = dispatched groupBy { _.queue.get } toTimeslots { _.slots }
-  val chart   = createTimeSeriesStackedAreaChart(dataset, name)
-
-  saveChartAsPNG(output, chart, width, height)
-}
-
-object SlotsSequentialVsParallel extends ChartingApp {
-  override lazy val name = "Slots - Sequential vs. Parallel"
-
-  val dataset = dispatched groupBy { j =>
-    if (parallel(j)) "parallel" else "sequential"
-  } toTimeslots { _.slots }
-
-  val chart = createTimeSeriesStackedAreaChart(dataset, name)
-
-  saveChartAsPNG(output, chart, width, height)
 }
