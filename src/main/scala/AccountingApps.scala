@@ -47,7 +47,13 @@ trait ChartingApp extends AccountingApp {
     _.isDirectory
   } getOrElse {
     sys.env("HOME")
-  } + "%s%s-%s.png" format (fileSeparator, name, DateTime.now)
+  } + "%s%s-%s-%dx%d.png" format (
+    fileSeparator,
+    name,
+    interval map { _.toString.replaceAll(fileSeparator,"-") } getOrElse { DateTime.now },
+    width,
+    height
+  )
 }
 
 object SlotsPerQueue extends ChartingApp {
