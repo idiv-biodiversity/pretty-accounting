@@ -2,19 +2,18 @@ package grid
 
 object RichJobs extends RichJobs
 
-trait RichJobs extends Filtering with TimeImplicits with TypeImports {
+trait RichJobs extends Filtering with RichTime with TypeImports {
   // TODO: jobs per 1.minute { _.slots }
   implicit def jobspimp(l: GenIterable[Job]) = new JobsPimp(l)
   implicit def jobcategorypimp[A](m: GenMap[A,GenIterable[Job]]) = new JobsCategoryPimp(m)
 
   class JobsPimp(jobs: GenIterable[Job]) {
     def toTimeslots(f: Job => Double)
-      (implicit start: DateTime = DateTime.now.withDayOfYear(1).withMillisOfDay(0),
-                end:   DateTime = DateTime.now): Map[DateTime,Double] = {
+                   (implicit interval: Interval = thisYear): Map[DateTime,Double] = {
       import scalaz.Scalaz._
 
       val ts: GenIterable[Map[DateTime,Double]] = for {
-        job    <- jobs filter { isBetween(_)(start,end) }
+        job    <- jobs filter { isBetween(_) }
         start  =  job.time.start withSecondOfMinute 0
         end    =  job.time.end   withSecondOfMinute 0
         data   =  f(job)
@@ -30,9 +29,8 @@ trait RichJobs extends Filtering with TimeImplicits with TypeImports {
 
   class JobsCategoryPimp[A](groupedJobs: GenMap[A,GenIterable[Job]]) {
     def toTimeslots(f: Job => Double)
-      (implicit start: DateTime = DateTime.now.withDayOfYear(1).withMillisOfDay(0),
-                end:   DateTime = DateTime.now): Map[A,Map[DateTime,Double]] =
+                   (implicit interval: Interval = thisYear): Map[A,Map[DateTime,Double]] =
       // TODO mapValues (requires newer scala)
-      groupedJobs.map(kv => kv._1 -> kv._2.toTimeslots(f)(start,end)).seq.toMap
+      groupedJobs.map(kv => kv._1 -> kv._2.toTimeslots(f)).seq.toMap
   }
 }

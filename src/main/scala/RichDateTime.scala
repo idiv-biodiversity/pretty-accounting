@@ -1,16 +1,13 @@
 package grid
 
-object Implicits extends Implicits
-object FileImplicits extends FileImplicits
-object TimeImplicits extends TimeImplicits
+object RichTime extends RichTime
 
-trait Implicits extends FileImplicits with TimeImplicits
+trait RichTime {
+  def thisYear = {
+    val now = DateTime.now
+    now.withDayOfYear(1).withMillisOfDay(0) to now
+  }
 
-trait FileImplicits {
-  implicit def string2file(s: String) = new java.io.File(s)
-}
-
-trait TimeImplicits {
   implicit def intervalpimp(interval: Interval) = new IntervalPimp(interval)
 
   class IntervalPimp(interval: Interval) {

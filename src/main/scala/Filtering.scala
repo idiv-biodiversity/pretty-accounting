@@ -13,8 +13,8 @@ trait Filtering {
 
   def parallel(j: Job) = j.parallelEnvironment.isDefined
 
-  def isBetween(j: Job)(implicit start: DateTime, end: DateTime) =
-    (j.time.end isAfter start) && (j.time.start isBefore end)
+  def isBetween(j: Job)(implicit interval: Interval) =
+    (j.time.end isAfter interval.start) && (j.time.start isBefore interval.end)
 
   def realJob(j: Job) = j.queue.nonEmpty && j.node.nonEmpty  && (j.time.submission != epochstart)
 
