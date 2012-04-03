@@ -9,11 +9,13 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
 
   class JobsPimp(jobs: GenIterable[Job]) {
     def toTimeslots(f: Job => Double)
-                   (implicit interval: Interval = thisYear): Map[DateTime,Double] = {
+                   (implicit interval: Option[Interval] = Some(thisYear)): Map[DateTime,Double] = {
       import scalaz.Scalaz._
 
       val ts: GenIterable[Map[DateTime,Double]] = for {
-        job    <- jobs filter { isBetween(_) }
+        job    <- interval map { implicit interval =>
+                    jobs filter { isBetween(_) }
+                  } getOrElse(jobs)
         start  =  job.time.start withSecondOfMinute 0
         end    =  job.time.end   withSecondOfMinute 0
         data   =  f(job)
@@ -29,7 +31,7 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
 
   class JobsCategoryPimp[A](groupedJobs: GenMap[A,GenIterable[Job]]) {
     def toTimeslots(f: Job => Double)
-                   (implicit interval: Interval = thisYear): Map[A,Map[DateTime,Double]] =
+                   (implicit interval: Option[Interval] = Some(thisYear)): Map[A,Map[DateTime,Double]] =
       // TODO mapValues (requires newer scala)
       groupedJobs.map(kv => kv._1 -> kv._2.toTimeslots(f)).seq.toMap
   }

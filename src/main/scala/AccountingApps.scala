@@ -1,6 +1,7 @@
 package grid
 
 import org.jfree.chart.ChartUtilities._
+import scalaz.Scalaz._
 
 trait AccountingApp extends App with Accounting {
 }
@@ -31,6 +32,18 @@ trait ChartingApp extends AccountingApp {
   } getOrElse {
     sys.env("HOME")
   } + "%s%s-%s.png" format (fileSeparator, name, DateTime.now)
+
+  lazy val start = sys.props get "chart.start" flatMap { _ toDateTimeOption } orElse {
+    Some(0L.toDateTime)
+  }
+
+  lazy val end   = sys.props get "chart.end"   flatMap { _ toDateTimeOption } orElse {
+    Some(DateTime.now)
+  }
+
+  implicit lazy val interval = (start |@| end) {
+    _ to _
+  }
 }
 
 object SlotsPerQueue extends ChartingApp {

@@ -9,6 +9,7 @@ trait RichTime {
   }
 
   implicit def intervalpimp(interval: Interval) = new IntervalPimp(interval)
+  implicit def string2richstring(s: String) = new RichString(s)
 
   class IntervalPimp(interval: Interval) {
     import org.joda.time.ReadablePeriod
@@ -23,6 +24,23 @@ trait RichTime {
       }
 
       coll.toList
+    }
+  }
+
+  class RichString(s: String) {
+    def toLocalDate = new LocalDate(s)
+    def toDateTime  = new DateTime(s)
+
+    def toLocalDateOption = try {
+      Some(toLocalDate)
+    } catch {
+      case e: IllegalArgumentException => None
+    }
+
+    def toDateTimeOption = try {
+      Some(toDateTime)
+    } catch {
+      case e: IllegalArgumentException => None
     }
   }
 
