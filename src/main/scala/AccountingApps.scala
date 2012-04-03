@@ -36,7 +36,7 @@ trait ChartingApp extends AccountingApp {
 object SlotsPerQueue extends ChartingApp {
   override lazy val name = "Slots per Queue"
 
-  val dataset = jobs filter wasRunning groupBy { _.queue.get } perMinute { _.slots }
+  val dataset = jobs filter wasRunning groupBy { _.queue.get } toTimeslots { _.slots }
   val chart   = createTimeSeriesStackedAreaChart(dataset, name)
 
   saveChartAsPNG(output, chart, width, height)
@@ -47,7 +47,7 @@ object SlotsSequentialVsParallel extends ChartingApp {
 
   val dataset = jobs filter wasRunning groupBy { j =>
     if (parallel(j)) "parallel" else "sequential"
-  } perMinute { _.slots }
+  } toTimeslots { _.slots }
 
   val chart = createTimeSeriesStackedAreaChart(dataset, name)
 
