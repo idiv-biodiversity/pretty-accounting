@@ -8,9 +8,10 @@ object BuildSettings {
   lazy val buildVersion      = "0.0.1-SNAPSHOT"
   lazy val buildScalaVersion = "2.9.1"
 
-  lazy val buildSettings = Defaults.defaultSettings ++ Seq (
-    version      := buildVersion,
-    scalaVersion := buildScalaVersion
+  lazy val baseSettings = Defaults.defaultSettings ++ Seq (
+    version       := buildVersion,
+    scalaVersion  := buildScalaVersion,
+    resolvers    ++= Resolvers.combined
   )
 }
 
@@ -24,7 +25,7 @@ object PrettyAccountingBuild extends Build {
   lazy val core = Project (
     id       = "pretty-accounting-core",
     base     = file("core"),
-    settings = buildSettings ++ Seq (
+    settings = baseSettings ++ Seq (
       initialCommands in Compile += """
         import scalaz._
         import Scalaz._
@@ -40,33 +41,42 @@ object PrettyAccountingBuild extends Build {
       initialCommands in Compile in console += """
         import grid.Accounting._
       """,
-      resolvers ++= Seq (
-        "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
-      ),
       libraryDependencies ++= Seq ( chart, pdf, swing, time, specs2, iocore, iofile, scalaz )
     )
   )
 
   lazy val efficiencyByUser = Project (
-    id   = "efficiency-by-user",
-    base = file("efficiency-by-user")
+    id        = "efficiency-by-user",
+    base      = file("efficiency-by-user"),
+    settings  = baseSettings
   ) dependsOn ( core )
 
   lazy val efficiencyByGroup = Project (
-    id   = "efficiency-by-group",
-    base = file("efficiency-by-group")
+    id        = "efficiency-by-group",
+    base      = file("efficiency-by-group"),
+    settings  = baseSettings
   ) dependsOn ( core )
 
   lazy val slotsPerQueue = Project (
-    id   = "slots-per-queue",
-    base = file("slots-per-queue")
+    id        = "slots-per-queue",
+    base      = file("slots-per-queue"),
+    settings  = baseSettings
   ) dependsOn ( core )
 
   lazy val slotsSeqVsPar = Project (
-    id   = "slots-seq-vs-par",
-    base = file("slots-seq-vs-par")
+    id        = "slots-seq-vs-par",
+    base      = file("slots-seq-vs-par"),
+    settings  = baseSettings
   ) dependsOn ( core )
 
+}
+
+object Resolvers {
+  lazy val sonarels = "Sonatype Releases"   at "http://oss.sonatype.org/content/repositories/releases"
+  lazy val sonasnap = "Sonatype Snapshots"  at "http://oss.sonatype.org/content/repositories/snapshots"
+  lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases"
+
+  lazy val combined = Seq ( sonarels, sonasnap, typesafe )
 }
 
 object Dependencies {
