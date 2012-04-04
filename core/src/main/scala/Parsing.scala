@@ -3,22 +3,25 @@ package grid
 object Parsing extends Parsing
 
 trait Parsing extends Filtering with TypeImports {
-  def defaultAccountingFilePath =
-    sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
+  def accountingFilePath: String = verbosef("accounting file: %s",
+    sys.props get "grid.accounting.file" getOrElse {
+      sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
+    }
+  )
 
-  def defaultAccountingFileLines =
-    scalax.io.Resource.fromURL("file://" + defaultAccountingFilePath).lines().toIterable.par
+  def accountingFileLines: GenIterable[String] =
+    scalax.io.Resource.fromURL("file://" + accountingFilePath).lines().toIterable.par
 
-  def raw(implicit lines: GenIterable[String] = defaultAccountingFileLines) = lines collect {
+  def raw(implicit lines: GenIterable[String] = accountingFileLines) = lines collect {
     case AccountingEntry(job) => job
   }
 
-  def jobs(implicit lines: GenIterable[String] = defaultAccountingFileLines) =
+  def jobs(implicit lines: GenIterable[String] = accountingFileLines) =
     raw filter combined
 
   def dispatched = jobs filter isDispatched
 
-  def linesNotMatching(implicit lines: GenIterable[String] = defaultAccountingFileLines) =
+  def linesNotMatching(implicit lines: GenIterable[String] = accountingFileLines) =
     lines filterNot { AccountingEntry.unapply(_).isDefined }
 
   object AccountingEntry {
