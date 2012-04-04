@@ -32,17 +32,19 @@ trait ChartingApp extends AccountingApp {
     case geometry(w,h) => w.toInt -> h.toInt
   } getOrElse 1920 -> 1080
 
-  lazy val output = sys.props get "output.dir" map { dir =>
-    if (dir endsWith fileSeparator) dir substring (0, dir.length - 1) else dir
-  } filter {
-    _.isDirectory
-  } getOrElse {
-    sys.env("HOME")
-  } + "%s%s-%s-%dx%d.png" format (
-    fileSeparator,
-    name,
-    interval map { _.toString.replaceAll(fileSeparator,"-") } getOrElse { DateTime.now },
-    width,
-    height
-  )
+  lazy val output: String = sys.props get "output.path" getOrElse {
+    sys.props get "output.dir" map { dir =>
+      if (dir endsWith fileSeparator) dir substring (0, dir.length - 1) else dir
+    } filter {
+      _.isDirectory
+    } getOrElse {
+      sys.env("HOME")
+    } + "%s%s-%s-%dx%d.png" format (
+      fileSeparator,
+      name,
+      interval map { _.toString.replaceAll(fileSeparator,"-") } getOrElse { DateTime.now },
+      width,
+      height
+    )
+  }
 }
