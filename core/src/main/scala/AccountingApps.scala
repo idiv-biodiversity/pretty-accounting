@@ -3,15 +3,50 @@ package grid
 import scalaz.Scalaz._
 
 trait AccountingApp extends App with Accounting {
-  def dispatched = jobs filter isDispatched
+  /** Returns the name of this app. */
+  def name: String
 
-  lazy val start = sys.props get "chart.start" flatMap { _ toDateTimeOption }
-  lazy val end   = sys.props get "chart.end"   flatMap { _ toDateTimeOption }
+  /** Returns the default output file extension. */
+  def defaultExtension: String
 
-  implicit lazy val interval = (start |@| end) { _ to _ }
+  implicit lazy val interval: Option[Interval] = sys.props get "grid.accounting.interval" map {
+    _.trim.toLowerCase
+  } collect {
+    case "month"   => val now = DateTime.now ; (now - 1.months) to now
+    case "quarter" => val now = DateTime.now ; (now - 3.months) to now
+    case "year"    => val now = DateTime.now ; (now - 1.year)   to now
+  } orElse {
+    val start = sys.props get "grid.accounting.start" flatMap { _ toDateTimeOption }
+    val end   = sys.props get "grid.accounting.end"   flatMap { _ toDateTimeOption }
+
+    (start |@| end) { _ to _ }
+  }
+
+  lazy val extension: String = sys.props get "grid.accounting.output.extension" getOrElse {
+    defaultExtension
+  }
+
+  lazy val outputPath: String = sys.props get "grid.accounting.output.path" map { dir =>
+    if (dir endsWith fileSeparator) dir substring (0, dir.length - 1) else dir
+  } filter {
+    _.isDirectory
+  } getOrElse {
+    sys.env("HOME")
+  }
+
+  lazy val output: String = "%s%s%s.%s" format (
+    outputPath,
+    fileSeparator,
+    sys.props get "grid.accounting.output.name" getOrElse {
+      name + ("-" + (interval map { _.toString.replaceAll(fileSeparator,"-") } getOrElse { DateTime.now }))
+    },
+    extension
+  )
 }
 
 trait EfficiencyApp extends AccountingApp {
+  def defaultExtension = "txt"
+
   def formatted(t: Tuple4[String,Int,Double,Double]) =
     "%10s -> %10d jobs -> %6.2f%% u -> %6.2f%% u+s" format (
       t._1,                             //  group
@@ -22,29 +57,12 @@ trait EfficiencyApp extends AccountingApp {
 }
 
 trait ChartingApp extends AccountingApp {
-  /** Returns the name that is used both for the title of the chart and the output file name. */
-  def name: String
+  def defaultExtension = "png"
 
   /** Returns the regex used to parse width and height. */
   protected lazy val geometry = """(\d+)x(\d+)""".r
 
-  lazy val (width,height) = sys.props get "chart.geometry" collect {
+  lazy val (width,height) = sys.props get "grid.accounting.chart.geometry" collect {
     case geometry(w,h) => w.toInt -> h.toInt
   } getOrElse 1920 -> 1080
-
-  lazy val output: String = sys.props get "output.path" getOrElse {
-    sys.props get "output.dir" map { dir =>
-      if (dir endsWith fileSeparator) dir substring (0, dir.length - 1) else dir
-    } filter {
-      _.isDirectory
-    } getOrElse {
-      sys.env("HOME")
-    } + "%s%s-%s-%dx%d.png" format (
-      fileSeparator,
-      name,
-      interval map { _.toString.replaceAll(fileSeparator,"-") } getOrElse { DateTime.now },
-      width,
-      height
-    )
-  }
 }

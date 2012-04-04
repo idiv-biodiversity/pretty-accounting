@@ -16,6 +16,8 @@ trait Parsing extends Filtering with TypeImports {
   def jobs(implicit lines: GenIterable[String] = defaultAccountingFileLines) =
     raw filter combined
 
+  def dispatched = jobs filter isDispatched
+
   def linesNotMatching(implicit lines: GenIterable[String] = defaultAccountingFileLines) =
     lines filterNot { AccountingEntry.unapply(_).isDefined }
 
