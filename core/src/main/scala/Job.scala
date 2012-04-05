@@ -138,9 +138,18 @@ object Job {
   case class Acl(department: String, project: String)
 
   object Reservation {
-    def apply(s: String): Reservation = {
+    def apply(s: String): Option[Reservation] = {
       val parts = s split ":"
-      Reservation(id = parts(0).toInt, submission = parts(1).toLong)
+
+      val rid   = parts(0).toInt
+      val rst   = parts(1).toLong
+
+      (rid + rst) match {
+        case 0 => None
+        case _ => Some (
+          Reservation(id = rid, submission = rst)
+        )
+      }
     }
   }
 
@@ -164,6 +173,6 @@ case class Job (
     parallelEnvironment: Option[String],
     slots: Int,
     resReq: Option[String],
-    parallelTaskId: Option[Int],
-    reservation: Reservation
+    parallelTaskId: Option[String],
+    reservation: Option[Reservation]
   )
