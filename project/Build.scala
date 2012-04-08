@@ -85,7 +85,7 @@ object Dependencies {
   lazy val swing  = "org.scala-lang"       %  "scala-swing" % buildScalaVersion
   lazy val time   = "org.scala-tools.time" %% "time"        % "0.5"
   lazy val scalaz = "org.scalaz"           %% "scalaz-core" % "6.0.4"
-  lazy val specs2 = "org.specs2"           %% "specs2"      % "1.8.2" % "test"
+  lazy val specs2 = "org.specs2"           %% "specs2"      % "1.9" % "test"
   lazy val iocore = "com.github.scala-incubator.io" %% "scala-io-core" % "0.4-SNAPSHOT"
   lazy val iofile = "com.github.scala-incubator.io" %% "scala-io-file" % "0.4-SNAPSHOT"
 }
