@@ -61,6 +61,27 @@ trait RichCharting extends TypeImports with StaticImports {
     chart
   }
 
+  def createLabelledBarChart(implicit dataset: CategoryDataset, title: String = "") = {
+    val chart = createBarChart(
+      /* title             = */ title,
+      /* categoryAxisLabel = */ "",
+      /* valueAxisLabel    = */ "",
+      /* dataset           = */ dataset,
+      /* orientation       = */ VERTICAL,
+      /* legend            = */ true,
+      /* tooltips          = */ false,
+      /* urls              = */ false
+    )
+
+    val renderer = chart.getPlot.asInstanceOf[CategoryPlot].getRenderer
+    val labelgen = new CategoryLabeller
+
+    renderer.setBaseItemLabelsVisible(true)
+    renderer.setBaseItemLabelGenerator(labelgen)
+
+    chart
+  }
+
   implicit def pimpedJFreeChart(chart: JFreeChart) = new JFreeChartPimp(chart)
 
   class JFreeChartPimp(chart: JFreeChart) {
