@@ -3,7 +3,7 @@ package grid
 object Filtering extends Filtering
 
 trait Filtering {
-  lazy val ExcludeGIDs = "circular|root|wkdv|hpcworks|extusers".r
+  lazy val ExcludeGIDs = "circular|root|wkdv|hpcworks|extusers|pws".r
   lazy val epochstart  = new DateTime("1970-01-01T01:00:00.000+01:00")
 
   def nonAdminAndExternalGIDs(j: Job) = ExcludeGIDs.unapplySeq(j.user.gid).isEmpty
