@@ -34,7 +34,7 @@ trait AccountingApp extends App with Accounting {
     sys.env("HOME")
   }
 
-  lazy val output: String = "%s%s%s.%s" format (
+  implicit lazy val output: java.io.File = "%s%s%s.%s" format (
     outputPath,
     fileSeparator,
     sys.props get "grid.accounting.output.name" getOrElse {
@@ -62,7 +62,7 @@ trait ChartingApp extends AccountingApp {
   /** Returns the regex used to parse width and height. */
   protected lazy val geometry = """(\d+)x(\d+)""".r
 
-  lazy val (width,height) = sys.props get "grid.accounting.chart.geometry" collect {
+  implicit lazy val dim = sys.props get "grid.accounting.chart.geometry" collect {
     case geometry(w,h) => w.toInt -> h.toInt
   } getOrElse 1920 -> 1080
 }

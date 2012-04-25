@@ -18,9 +18,13 @@ object BuildSettings {
 object PrettyAccountingBuild extends Build {
 
   lazy val root = Project (
-    id       = "pretty-accounting",
-    base     = file(".")
-  ) aggregate ( core, efficiencyByUser, efficiencyByGroup, slotsPerQueue, slotsSeqVsPar )
+    id        = "pretty-accounting",
+    base      = file("."),
+    aggregate = Seq ( core,
+      efficiencyByUser, efficiencyByGroup,
+      slotsPerQueue, slotsSeqVsPar, slotsPerUser
+    )
+  )
 
   lazy val core = Project (
     id       = "pretty-accounting-core",
@@ -46,28 +50,39 @@ object PrettyAccountingBuild extends Build {
   )
 
   lazy val efficiencyByUser = Project (
-    id        = "efficiency-by-user",
-    base      = file("efficiency-by-user"),
-    settings  = baseSettings
-  ) dependsOn ( core )
+    id           = "efficiency-by-user",
+    base         = file("efficiency-by-user"),
+    dependencies = Seq ( core ),
+    settings     = baseSettings
+  )
 
   lazy val efficiencyByGroup = Project (
-    id        = "efficiency-by-group",
-    base      = file("efficiency-by-group"),
-    settings  = baseSettings
-  ) dependsOn ( core )
+    id           = "efficiency-by-group",
+    base         = file("efficiency-by-group"),
+    dependencies = Seq ( core ),
+    settings     = baseSettings
+  )
 
   lazy val slotsPerQueue = Project (
-    id        = "slots-per-queue",
-    base      = file("slots-per-queue"),
-    settings  = baseSettings
-  ) dependsOn ( core )
+    id           = "slots-per-queue",
+    base         = file("slots-per-queue"),
+    dependencies = Seq ( core ),
+    settings     = baseSettings
+  )
 
   lazy val slotsSeqVsPar = Project (
-    id        = "slots-seq-vs-par",
-    base      = file("slots-seq-vs-par"),
-    settings  = baseSettings
-  ) dependsOn ( core )
+    id           = "slots-seq-vs-par",
+    base         = file("slots-seq-vs-par"),
+    dependencies = Seq ( core ),
+    settings     = baseSettings
+  )
+
+  lazy val slotsPerUser = Project (
+    id           = "slots-per-user",
+    base         = file("slots-per-user"),
+    dependencies = Seq ( core ),
+    settings     = baseSettings
+  )
 
 }
 

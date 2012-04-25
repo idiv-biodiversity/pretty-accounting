@@ -1,6 +1,9 @@
 package grid
 
+import java.io._
+
 import org.jfree.chart.ChartFactory._
+import org.jfree.chart.ChartUtilities._
 import org.jfree.chart.plot.PlotOrientation._
 
 object RichCharting extends RichCharting
@@ -86,28 +89,47 @@ trait RichCharting extends TypeImports with StaticImports {
 
   class JFreeChartPimp(chart: JFreeChart) {
 
+    def saveAs(ext: String)(implicit output: File, dim: Pair[Int,Int]): Unit = ext.toLowerCase match {
+      case "pdf"          => saveAsPDF
+      case "png"          => saveAsPNG
+      case "jpg" | "jpeg" => saveAsJPEG
+      case _              => sys error ("""Extension "%s" is not supported.""" format ext)
+    }
+
+    // -------------------------------------------------------------------
+    // save wrappers
+    // -------------------------------------------------------------------
+
+    def saveAsPNG(implicit output: File, dim: Pair[Int,Int]) {
+      saveChartAsPNG(output, chart, dim._1, dim._2)
+    }
+
+    def saveAsJPEG(implicit output: File, dim: Pair[Int,Int]) {
+      saveChartAsJPEG(output, chart, dim._1, dim._2)
+    }
+
     // -------------------------------------------------------------------
     // export to pdf
     // -------------------------------------------------------------------
 
     import java.awt.geom._
-    import java.io._
     import com.lowagie.text._
     import com.lowagie.text.pdf._
 
-    def saveAsPDF(file: File, width: Int, height: Int)
-      (implicit fontMapper: FontMapper = new DefaultFontMapper) {
-      val os = new BufferedOutputStream(new FileOutputStream(file))
+    def saveAsPDF(implicit output: File, dim: Pair[Int,Int], fontMapper: FontMapper = new DefaultFontMapper) {
+      implicit val os = new BufferedOutputStream(new FileOutputStream(output))
 
       try {
-        writeAsPDF(os, width, height, fontMapper)
+        writeAsPDF
       } finally {
         os.close()
       }
     }
 
-    def writeAsPDF(os: OutputStream, width: Int, height: Int, fontMapper: FontMapper) {
-      val pagesize = new Rectangle(width,height)
+    def writeAsPDF(implicit os: OutputStream, dim: Pair[Int,Int], fontMapper: FontMapper) {
+      val (width,height) = dim
+
+      val pagesize = new Rectangle(width, height)
       val document = new Document(pagesize, 50, 50, 50, 50)
 
       try {

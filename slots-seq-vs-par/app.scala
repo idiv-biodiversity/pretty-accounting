@@ -11,5 +11,5 @@ object SlotsSequentialVsParallel extends ChartingApp {
 
   val chart = createTimeSeriesStackedAreaChart(dataset, name)
 
-  saveChartAsPNG(output, chart, width, height)
+  chart saveAs extension
 }

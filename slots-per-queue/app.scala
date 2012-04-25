@@ -8,5 +8,5 @@ object SlotsPerQueue extends ChartingApp {
   val dataset = dispatched groupBy { _.queue.get } toTimeslots { _.slots }
   val chart   = createTimeSeriesStackedAreaChart(dataset, name)
 
-  saveChartAsPNG(output, chart, width, height)
+  chart saveAs extension
 }
