@@ -5,18 +5,42 @@ import java.io._
 import org.jfree.chart.ChartFactory._
 import org.jfree.chart.ChartUtilities._
 import org.jfree.chart.plot.PlotOrientation._
+import org.jfree.data.time.Minute
 
 object RichCharting extends RichCharting
 
 trait RichCharting extends TypeImports with StaticImports {
-  implicit def joda2jfreeminute(d: DateTime) = new org.jfree.data.time.Minute(d.toDate)
+  implicit def joda2jfreeminute(d: DateTime): Minute = new Minute(d.toDate)
 
-  implicit def timeslots2timeseries[A <% Number](it: Iterable[(DateTime,A)]) = {
+  implicit def toTimeSeries[A <% Number](it: Iterable[(DateTime,A)]): TimeSeries = {
     val dataset = new TimeSeries("")
     it foreach { kv =>
       dataset.add(kv._1,kv._2)
     }
     dataset
+  }
+
+  implicit def toCategoryDataset[A <% Comparable[A],B <% Comparable[B],C <% Number]
+      (it: Iterable[(A,B,C)]): CategoryDataset = {
+    val dataset = new org.jfree.data.category.DefaultCategoryDataset
+    it foreach { kkv =>
+      dataset.addValue(kkv._3,kkv._2,kkv._1)
+    }
+    dataset
+  }
+
+  implicit def toCombinedDomainCategoryChart[A <% Comparable[A],B <% Comparable[B],C <% Comparable[C],D <% Number]
+      (it: Iterable[(A,B,C,D)]): JFreeChart = {
+    val plot = new org.jfree.chart.plot.CombinedDomainCategoryPlot
+
+    it groupBy { _._1 } mapValues { coll =>
+      toCategoryDataset(coll map { t => (t._2,t._3,t._4) })
+    } foreach { x =>
+      val (cat,dataset) = x
+      plot.add(createLabelledBarChart(dataset,cat.toString).getPlot.asInstanceOf[CategoryPlot])
+    }
+
+    new JFreeChart(plot)
   }
 
   implicit def groupedtimeslots2timetable[A <% Comparable[A], B <% Number](groups: Map[A,Iterable[(DateTime,B)]]) = {
