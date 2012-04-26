@@ -54,10 +54,6 @@ trait RichCharting extends TypeImports with StaticImports {
     dataset
   }
 
-  def show(chart: JFreeChart)(implicit title: String = "") = onEDT {
-    new ChartFrame(title, chart, true) setVisible true
-  }
-
   def createTimeSeriesAreaChart(implicit dataset: XYDataset, title: String = "") = {
     val chart = createXYAreaChart (
       /* title       = */ title,
@@ -112,6 +108,10 @@ trait RichCharting extends TypeImports with StaticImports {
   implicit def pimpedJFreeChart(chart: JFreeChart) = new JFreeChartPimp(chart)
 
   class JFreeChartPimp(chart: JFreeChart) {
+
+    def show(implicit title: String = "") = onEDT {
+      new ChartFrame(title, chart, true) setVisible true
+    }
 
     def saveAs(ext: String)(implicit output: File, dim: Pair[Int,Int]): Unit = ext.toLowerCase match {
       case "pdf"          => saveAsPDF
