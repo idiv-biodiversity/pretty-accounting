@@ -22,7 +22,7 @@ object PrettyAccountingBuild extends Build {
     base      = file("."),
     aggregate = Seq ( core,
       efficiencyByUser, efficiencyByGroup,
-      slotsPerQueue, slotsSeqVsPar, slotsPerUser
+      slotsPerQueue, slotsSeqVsPar, slotsPerUser, slotsRunVsWait
     )
   )
 
@@ -73,6 +73,13 @@ object PrettyAccountingBuild extends Build {
   lazy val slotsSeqVsPar = Project (
     id           = "slots-seq-vs-par",
     base         = file("slots-seq-vs-par"),
+    dependencies = Seq ( core ),
+    settings     = baseSettings
+  )
+
+  lazy val slotsRunVsWait = Project (
+    id           = "slots-run-vs-wait",
+    base         = file("slots-run-vs-wait"),
     dependencies = Seq ( core ),
     settings     = baseSettings
   )

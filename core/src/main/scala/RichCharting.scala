@@ -20,6 +20,17 @@ trait RichCharting extends TypeImports with StaticImports {
     dataset
   }
 
+  implicit def toTimeTable[A <% Comparable[A], B <% Number](m: Map[A,Iterable[(DateTime,B)]]) = {
+    val dataset = new TimeTableXYDataset()
+
+    for {
+      category      <-  m.keys
+      (time,value)  <-  m(category)
+    } dataset add (time, value, category, false)
+
+    dataset
+  }
+
   implicit def toCategoryDataset[A <% Comparable[A],B <% Comparable[B],C <% Number]
       (it: Iterable[(A,B,C)]): CategoryDataset = {
     val dataset = new org.jfree.data.category.DefaultCategoryDataset
@@ -41,17 +52,6 @@ trait RichCharting extends TypeImports with StaticImports {
     }
 
     new JFreeChart(plot)
-  }
-
-  implicit def groupedtimeslots2timetable[A <% Comparable[A], B <% Number](groups: Map[A,Iterable[(DateTime,B)]]) = {
-    val dataset = new TimeTableXYDataset()
-
-    for {
-      group         <-  groups.keys
-      (time,value)  <-  groups(group)
-    } dataset add (time, value, group, false)
-
-    dataset
   }
 
   def createTimeSeriesAreaChart(implicit dataset: XYDataset, title: String = "") = {
