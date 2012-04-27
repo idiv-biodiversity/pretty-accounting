@@ -7,6 +7,15 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
   implicit def jobspimp(l: GenIterable[Job]) = new JobsPimp(l)
   implicit def jobcategorypimp[A](m: GenMap[A,GenIterable[Job]]) = new JobsCategoryPimp(m)
 
+  def timeslots[A](jobs: GenIterable[Job])
+                  (f: Job => A, start: Job => DateTime, end: Job => DateTime)
+                  : GenIterable[Map[DateTime,A]] = for {
+    job <- jobs
+    s   =  start(job) withSecondOfMinute 0
+    e   =  end(job)   withSecondOfMinute 0
+    d   =  f(job)
+  } yield (s to e by 1.minute map { _ -> d } toMap)
+
   class JobsPimp(jobs: GenIterable[Job]) {
     def toTimeslots(f: Job => Double)
                    (implicit interval: Option[Interval]): Map[DateTime,Double] = {
@@ -29,20 +38,13 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
     def toPendingVsRunning(implicit interval: Option[Interval]): Map[String,Map[DateTime,Int]] = {
       import scalaz.Scalaz._
 
-      val (pending,running): (GenIterable[Map[DateTime,Int]],GenIterable[Map[DateTime,Int]]) = for {
-        job    <- interval map { implicit interval =>
-                    jobs filter { isBetween(_) }
-                  } getOrElse(jobs)
-        sub    =  job.time.submission withSecondOfMinute 0
-        start  =  job.time.start      withSecondOfMinute 0
-        end    =  job.time.end        withSecondOfMinute 0
-        slots  =  job.slots
-      } yield (sub   to start by 1.minute map { _ -> slots } toMap) ->
-              (start to end   by 1.minute map { _ -> slots } toMap)
+      val filtered = interval map { implicit interval =>
+        jobs filter { isBetween(_) }
+      } getOrElse { jobs }
 
       Map (
-        "pending" -> pending.fold(Map())(_ |+| _),
-        "running" -> running.fold(Map())(_ |+| _)
+        "pending" -> timeslots(filtered)(_.slots,_.time.submission,_.time.start).fold(Map())(_ |+| _),
+        "running" -> timeslots(filtered)(_.slots,_.time.start     ,_.time.end  ).fold(Map())(_ |+| _)
       )
     }
 

@@ -20,8 +20,9 @@ trait RichCharting extends TypeImports with StaticImports {
     dataset
   }
 
-  implicit def toTimeTable[A <% Comparable[A], B <% Number](m: Map[A,Iterable[(DateTime,B)]]) = {
-    val dataset = new TimeTableXYDataset()
+  implicit def toTimeTable[A <% Comparable[A], B <% Number]
+      (m: Map[A,Iterable[(DateTime,B)]]): TimeTableXYDataset = {
+    val dataset = new TimeTableXYDataset
 
     for {
       category      <-  m.keys
