@@ -32,7 +32,16 @@ trait RichCharting extends TypeImports with StaticImports {
     dataset
   }
 
-  implicit def toCategoryDataset[A <% Comparable[A],B <% Comparable[B],C <% Number]
+  implicit def tuple2sToCategoryDataset[A <% Comparable[A],B <% Number]
+      (it: GenIterable[(A,B)]): CategoryDataset = {
+    val dataset = new org.jfree.data.category.DefaultCategoryDataset
+    it.seq foreach { kv =>
+      dataset.addValue(kv._2,kv._1,"")
+    }
+    dataset
+  }
+
+  implicit def tuple3sToCategoryDataset[A <% Comparable[A],B <% Comparable[B],C <% Number]
       (it: Iterable[(A,B,C)]): CategoryDataset = {
     val dataset = new org.jfree.data.category.DefaultCategoryDataset
     it foreach { kkv =>
@@ -46,7 +55,7 @@ trait RichCharting extends TypeImports with StaticImports {
     val plot = new org.jfree.chart.plot.CombinedDomainCategoryPlot
 
     it groupBy { _._1 } mapValues { coll =>
-      toCategoryDataset(coll map { t => (t._2,t._3,t._4) })
+      tuple3sToCategoryDataset(coll map { t => (t._2,t._3,t._4) })
     } foreach { x =>
       val (cat,dataset) = x
       plot.add(createLabelledBarChart(dataset,cat.toString).getPlot.asInstanceOf[CategoryPlot])
