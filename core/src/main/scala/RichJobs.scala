@@ -63,8 +63,7 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
   class JobsCategoryPimp[A](groupedJobs: GenMap[A,GenIterable[Job]]) {
     def toTimeslots(f: Job => Double)
                    (implicit interval: Option[Interval]): Map[A,Map[DateTime,Double]] =
-      // TODO mapValues (requires newer scala)
-      groupedJobs.map(kv => kv._1 -> kv._2.toTimeslots(f)).seq.toMap
+      groupedJobs.mapValues(_.toTimeslots(f)).seq.toMap
 
     def efficiency(implicit interval: Option[Interval]) = for {
       (group,jobs) <- groupedJobs

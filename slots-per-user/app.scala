@@ -1,6 +1,6 @@
 package grid
 
-object SlotsPerByUser extends ChartingApp {
+object JobsByUser extends ChartingApp {
   def name = "slots-per-user"
 
   implicit val dataset = new org.jfree.data.category.DefaultCategoryDataset
@@ -13,8 +13,8 @@ object SlotsPerByUser extends ChartingApp {
       dispatched
     } groupBy {
       _.user.uid
-    } map { x => // TODO mapValues
-      x._1 -> x._2.size
+    } mapValues {
+      _.size
     }
   ).toList sortBy {
     _._2
