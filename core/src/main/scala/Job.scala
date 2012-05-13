@@ -27,7 +27,18 @@ object Job {
     }
   }
 
-  case class Time(submission: DateTime, start: DateTime, end: DateTime)
+  case class Time(submission: DateTime, start: DateTime, end: DateTime) {
+
+    /** Returns the waiting time interval. */
+    def waiting: Interval = submission to start
+
+    /** Returns the running time interval. */
+    def running: Interval = start to end
+
+    /** Returns the turnaround time interval. */
+    def turnaround: Interval = submission to end
+
+  }
 
   object Status {
     def apply(s: String): Status = {
@@ -175,4 +186,13 @@ case class Job (
     resReq: Option[String],
     parallelTaskId: Option[String],
     reservation: Option[Reservation]
-  )
+  ) {
+
+  /** Returns the CPU efficiency.
+    *
+    * This value is calculated with the assumption that the job did not use more cores than
+    * requested.
+    */
+  lazy val efficiency: Double = (res.cputime / slots) / res.wctime
+
+}
