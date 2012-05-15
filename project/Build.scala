@@ -110,5 +110,5 @@ object Dependencies {
   lazy val scalaz = "org.scalaz"                    %% "scalaz-core"   % "6.0.4"
   lazy val iocore = "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.0"
   lazy val iofile = "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.0"
-  lazy val specs2 = "org.specs2"                    %% "specs2"        % "1.9" % "test"
+  lazy val specs2 = "org.specs2"                    %% "specs2"        % "1.10" % "test"
 }
