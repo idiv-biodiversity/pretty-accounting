@@ -12,6 +12,7 @@ trait AccountingApp extends App with Accounting {
   implicit lazy val interval: Option[Interval] = sys.props get "grid.accounting.interval" map {
     _.trim.toLowerCase
   } collect {
+    case "week"    => val now = DateTime.now ; (now - 1.week)   to now
     case "month"   => val now = DateTime.now ; (now - 1.months) to now
     case "quarter" => val now = DateTime.now ; (now - 3.months) to now
     case "year"    => val now = DateTime.now ; (now - 1.year)   to now
