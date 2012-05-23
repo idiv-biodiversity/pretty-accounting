@@ -43,8 +43,8 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
       } getOrElse { jobs }
 
       Map (
-        "pending" -> timeslots(filtered)(_.slots,_.time.submission,_.time.start).fold(Map())(_ |+| _),
-        "running" -> timeslots(filtered)(_.slots,_.time.start     ,_.time.end  ).fold(Map())(_ |+| _)
+        "waiting".localized -> timeslots(filtered)(_.slots,_.time.submission,_.time.start).fold(Map())(_ |+| _),
+        "running".localized -> timeslots(filtered)(_.slots,_.time.start     ,_.time.end  ).fold(Map())(_ |+| _)
       )
     }
 

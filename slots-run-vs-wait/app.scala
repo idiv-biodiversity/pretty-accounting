@@ -3,9 +3,10 @@ package grid
 import org.jfree.chart.ChartUtilities._
 
 object SlotsRunVsWait extends ChartingApp {
-  override lazy val name = "Slots - Running vs. Waiting"
+  override lazy val name = "slots-run-vs-wait"
 
-  val dataset = dispatched toPendingVsRunning
-
-  createTimeSeriesStackedAreaChart(dataset, name) saveAs extension
+  createTimeSeriesStackedAreaChart (
+    title   = name.localized,
+    dataset = dispatched toPendingVsRunning
+  ) saveAs extension
 }
