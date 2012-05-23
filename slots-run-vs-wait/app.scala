@@ -7,6 +7,6 @@ object SlotsRunVsWait extends ChartingApp {
 
   createTimeSeriesStackedAreaChart (
     title   = name.localized,
-    dataset = dispatched toPendingVsRunning
+    dataset = raw filter realJob filter isDispatched toPendingVsRunning
   ) saveAs extension
 }
