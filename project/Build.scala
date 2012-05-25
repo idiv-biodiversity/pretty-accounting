@@ -29,7 +29,7 @@ object PrettyAccountingBuild extends Build {
 
   lazy val core = Project (
     id       = "pretty-accounting-core",
-    base     = file("core"),
+    base     = file("pretty-accounting-core"),
     settings = baseSettings ++ Seq (
       initialCommands in Compile += """
         import scalaz._

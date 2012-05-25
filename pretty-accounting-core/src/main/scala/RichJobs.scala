@@ -58,6 +58,29 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
 
       fSum / wctimeSum
     }
+
+    def waste(implicit interval: Option[Interval], slotmax: Int): GenMap[DateTime,(Int,Int)] = {
+      import scalaz.Scalaz._
+
+      val filtered = interval map { implicit interval =>
+        jobs filter { isBetween(_) }
+      } getOrElse(jobs)
+
+      val stuff: GenIterable[Map[DateTime,(Int,Int)]] = for {
+        job <- jobs
+
+        sub =  job.time.submission withSecondOfMinute 0
+        sta =  job.time.start      withSecondOfMinute 0
+        end =  job.time.end        withSecondOfMinute 0
+
+        slo =  job.slots
+
+        wai =  (sub to sta by 1.minute map { _ -> (0,slo) }).toMap
+        run =  (sta to end by 1.minute map { _ -> (slo,0) }).toMap
+      } yield (wai |+| run)
+
+      stuff.fold(Map())(_ |+| _)
+    }
   }
 
   class JobsCategoryPimp[A](groupedJobs: GenMap[A,GenIterable[Job]]) {
