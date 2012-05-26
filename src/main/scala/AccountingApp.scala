@@ -56,26 +56,3 @@ trait AccountingApp extends App with Accounting {
     extension
   )
 }
-
-trait EfficiencyApp extends AccountingApp {
-  def defaultExtension = "txt"
-
-  def formatted(t: Tuple4[String,Int,Double,Double]) =
-    "%10s -> %10d jobs -> %6.2f%% u -> %6.2f%% u+s" format (
-      t._1,                             //  group
-      t._2,                             //  jobs
-      (t._3 * 10000).round / 100.0,     //  utime
-      (t._4 * 10000).round / 100.0      //  utime + stime
-    )
-}
-
-trait ChartingApp extends AccountingApp {
-  def defaultExtension = "png"
-
-  /** Returns the regex used to parse width and height. */
-  protected lazy val geometry = """(\d+)x(\d+)""".r
-
-  implicit lazy val dim = sys.props get "grid.accounting.chart.geometry" collect {
-    case geometry(w,h) => w.toInt -> h.toInt
-  } getOrElse 1920 -> 1080
-}

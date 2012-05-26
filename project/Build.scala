@@ -20,16 +20,6 @@ object PrettyAccountingBuild extends Build {
   lazy val root = Project (
     id        = "pretty-accounting",
     base      = file("."),
-    aggregate = Seq ( core,
-      efficiencyByUser, efficiencyByGroup,
-      slotsPerQueue, slotsSeqVsPar, slotsRunVsWait,
-      jobsPerUser
-    )
-  )
-
-  lazy val core = Project (
-    id       = "pretty-accounting-core",
-    base     = file("pretty-accounting-core"),
     settings = baseSettings ++ Seq (
       initialCommands in Compile += """
         import scalaz._
@@ -44,52 +34,11 @@ object PrettyAccountingBuild extends Build {
       """,
       initialCommands in (Compile, consoleQuick) <<= initialCommands in Compile,
       initialCommands in Compile in console += """
+        import grid._
         import grid.Accounting._
       """,
       libraryDependencies ++= Seq ( chart, pdf, swing, time, specs2, iocore, iofile, scalaz )
     )
-  )
-
-  lazy val efficiencyByUser = Project (
-    id           = "efficiency-by-user",
-    base         = file("efficiency-by-user"),
-    dependencies = Seq ( core ),
-    settings     = baseSettings
-  )
-
-  lazy val efficiencyByGroup = Project (
-    id           = "efficiency-by-group",
-    base         = file("efficiency-by-group"),
-    dependencies = Seq ( core ),
-    settings     = baseSettings
-  )
-
-  lazy val slotsPerQueue = Project (
-    id           = "slots-per-queue",
-    base         = file("slots-per-queue"),
-    dependencies = Seq ( core ),
-    settings     = baseSettings
-  )
-
-  lazy val slotsSeqVsPar = Project (
-    id           = "slots-seq-vs-par",
-    base         = file("slots-seq-vs-par"),
-    dependencies = Seq ( core ),
-    settings     = baseSettings
-  )
-
-  lazy val slotsRunVsWait = Project (
-    id           = "slots-run-vs-wait",
-    base         = file("slots-run-vs-wait"),
-    dependencies = Seq ( core ),
-    settings     = baseSettings
-  )
-
-  lazy val jobsPerUser = Project (
-    id           = "jobs-per-user",
-    base         = file("jobs-per-user"),
-    dependencies = Seq ( core ),
-    settings     = baseSettings
   )
 
 }
