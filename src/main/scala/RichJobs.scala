@@ -74,6 +74,16 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
       fSum / wctimeSum
     }
 
+    def average[A](f: Job => A)
+                  (implicit size: GenIterable[Job] => Int = { _.size },
+                            num: Numeric[A]): Double = {
+      import num._
+
+      val sum = jobs.foldLeft(zero) { _ + f(_) }
+
+      sum.toDouble / size(jobs)
+    }
+
     def waste(implicit interval: Option[Interval], slotmax: Int): GenMap[DateTime,(Int,Int)] = {
       import scalaz.Scalaz._
 
