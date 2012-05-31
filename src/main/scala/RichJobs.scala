@@ -26,6 +26,12 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
       _ -> d
     } toMap)
 
+    def toTimeValues[A](ftime: Job => Interval)(fdata: Job => A): GenIterable[(Interval,A)] = for {
+      job      <- jobs
+      interval =  ftime(job)
+      data     =  fdata(job)
+    } yield (interval -> data)
+
     def toTimeslots(f: Job => Double)
                    (implicit interval: Option[Interval]): Map[DateTime,Double] = {
       import scalaz.Scalaz._

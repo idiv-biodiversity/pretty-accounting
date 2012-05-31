@@ -5,22 +5,42 @@ import java.io._
 import org.jfree.chart.ChartFactory._
 import org.jfree.chart.ChartUtilities._
 import org.jfree.chart.plot.PlotOrientation._
-import org.jfree.data.time.Minute
+import org.jfree.data.category._
+import org.jfree.data.time._
 
 object RichCharting extends RichCharting
 
 trait RichCharting extends TypeImports with StaticImports {
+
+  // -------------------------------------------------------------------
+  // implicit conversions
+  // -------------------------------------------------------------------
+
   implicit def joda2jfreeminute(d: DateTime): Minute = new Minute(d.toDate)
 
-  implicit def toTimeSeries[A <% Number](it: Iterable[(DateTime,A)]): TimeSeries = {
-    val dataset = new TimeSeries("")
-    it foreach { kv =>
-      dataset.add(kv._1,kv._2)
+  implicit def interval2timeperiod(i: Interval): SimpleTimePeriod =
+    new SimpleTimePeriod(i.start.toDate, i.end.toDate)
+
+  implicit def toTimeSeries[A <% Number](it: GenIterable[(DateTime,A)]): TimeSeries = {
+    val series = new TimeSeries("")
+    it.seq foreach {
+      case (t,v) => series.add(t,v)
     }
-    dataset
+    series
   }
 
-  implicit def toTimeSeriesCollection[A <% Number](it: Iterable[(DateTime,A)]): TimeSeriesCollection =
+  implicit def toTimePeriodValues[A <% Number](it: GenIterable[(Interval,A)]): TimePeriodValues = {
+    val series = new TimePeriodValues("")
+    it.seq foreach {
+      case (t,v) => series.add(t,v)
+    }
+    series
+  }
+
+  implicit def toTimePeriodValuesCollection[A <% Number](it: GenIterable[(Interval,A)]): TimePeriodValuesCollection =
+    new TimePeriodValuesCollection(it)
+
+  implicit def toTimeSeriesCollection[A <% Number](it: GenIterable[(DateTime,A)]): TimeSeriesCollection =
     new TimeSeriesCollection(it)
 
   implicit def toTimeTable[A <% Comparable[A], B <% Number]
@@ -37,18 +57,18 @@ trait RichCharting extends TypeImports with StaticImports {
 
   implicit def tuple2sToCategoryDataset[A <% Comparable[A],B <% Number]
       (it: GenIterable[(A,B)]): CategoryDataset = {
-    val dataset = new org.jfree.data.category.DefaultCategoryDataset
-    it.seq foreach { kv =>
-      dataset.addValue(kv._2,kv._1,"")
+    val dataset = new DefaultCategoryDataset
+    it.seq foreach {
+      case (category,value) => dataset.addValue(value, category, "")
     }
     dataset
   }
 
   implicit def tuple3sToCategoryDataset[A <% Comparable[A],B <% Comparable[B],C <% Number]
-      (it: Iterable[(A,B,C)]): CategoryDataset = {
-    val dataset = new org.jfree.data.category.DefaultCategoryDataset
-    it foreach { kkv =>
-      dataset.addValue(kkv._3,kkv._2,kkv._1)
+      (it: GenIterable[(A,B,C)]): CategoryDataset = {
+    val dataset = new DefaultCategoryDataset
+    it.seq foreach {
+      case (upperCat,lowerCat,value) => dataset.addValue(value, lowerCat, upperCat)
     }
     dataset
   }
@@ -67,7 +87,11 @@ trait RichCharting extends TypeImports with StaticImports {
     new JFreeChart(plot)
   }
 
-  def createTimeSeriesAreaChart(implicit dataset: XYDataset, title: String = "") = {
+  // -------------------------------------------------------------------
+  // chart creation wrappers
+  // -------------------------------------------------------------------
+
+  def createAreaChart(implicit dataset: XYDataset, title: String = "") = {
     val chart = createXYAreaChart (
       /* title       = */ title,
       /* xAxisLabel  = */ "",
@@ -78,11 +102,15 @@ trait RichCharting extends TypeImports with StaticImports {
       /* tooltips    = */ false,
       /* urls        = */ false
     )
-    chart.getXYPlot.setDomainAxis(new DateAxis)
+
+    if (dataset.isInstanceOf[TimePeriodValuesCollection] ||
+        dataset.isInstanceOf[TimeSeriesCollection])
+      chart.getXYPlot.setDomainAxis(new DateAxis)
+
     chart
   }
 
-  def createTimeSeriesStackedAreaChart(implicit dataset: TableXYDataset, title: String = "") = {
+  def createStackedAreaChart(implicit dataset: TableXYDataset, title: String = "") = {
     val chart = createStackedXYAreaChart (
       /* title       = */ title,
       /* xAxisLabel  = */ "",
@@ -93,7 +121,10 @@ trait RichCharting extends TypeImports with StaticImports {
       /* tooltips    = */ false,
       /* urls        = */ false
     )
-    chart.getXYPlot.setDomainAxis(new DateAxis)
+
+    if (dataset.isInstanceOf[TimeTableXYDataset])
+      chart.getXYPlot.setDomainAxis(new DateAxis)
+
     chart
   }
 
@@ -108,6 +139,11 @@ trait RichCharting extends TypeImports with StaticImports {
       /* tooltips    = */ false,
       /* urls        = */ false
     )
+
+    if (dataset.isInstanceOf[TimePeriodValuesCollection] ||
+        dataset.isInstanceOf[TimeSeriesCollection])
+      chart.getXYPlot.setDomainAxis(new DateAxis)
+
     chart
   }
 
