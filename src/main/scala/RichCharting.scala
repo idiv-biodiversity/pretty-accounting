@@ -20,6 +20,9 @@ trait RichCharting extends TypeImports with StaticImports {
     dataset
   }
 
+  implicit def toTimeSeriesCollection[A <% Number](it: Iterable[(DateTime,A)]): TimeSeriesCollection =
+    new TimeSeriesCollection(it)
+
   implicit def toTimeTable[A <% Comparable[A], B <% Number]
       (m: Map[A,Iterable[(DateTime,B)]]): TimeTableXYDataset = {
     val dataset = new TimeTableXYDataset
@@ -91,6 +94,20 @@ trait RichCharting extends TypeImports with StaticImports {
       /* urls        = */ false
     )
     chart.getXYPlot.setDomainAxis(new DateAxis)
+    chart
+  }
+
+  def createLineChart(implicit dataset: XYDataset, title: String = "") = {
+    val chart = createXYLineChart (
+      /* title       = */ title,
+      /* xAxisLabel  = */ "",
+      /* yAxisLabel  = */ "",
+      /* dataset     = */ dataset,
+      /* orientation = */ VERTICAL,
+      /* legend      = */ true,
+      /* tooltips    = */ false,
+      /* urls        = */ false
+    )
     chart
   }
 

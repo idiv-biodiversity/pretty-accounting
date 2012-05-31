@@ -18,21 +18,22 @@ trait FileImplicits {
 }
 
 trait TypeImports {
-  type GenIterable[A]     = scala.collection.GenIterable[A]
-  type GenMap[A,B]        = scala.collection.GenMap[A,B]
-  type GenSeq[A]          = scala.collection.GenSeq[A]
+  type GenIterable[A] = scala.collection.GenIterable[A]
+  type GenMap[A,B]    = scala.collection.GenMap[A,B]
+  type GenSeq[A]      = scala.collection.GenSeq[A]
 
-  type CategoryDataset    = org.jfree.data.category.CategoryDataset
-  type CategoryLabeller   = org.jfree.chart.labels.StandardCategoryItemLabelGenerator
-  type CategoryPlot       = org.jfree.chart.plot.CategoryPlot
-  type ChartFrame         = org.jfree.chart.ChartFrame
-  type DateAxis           = org.jfree.chart.axis.DateAxis
-  type JFreeChart         = org.jfree.chart.JFreeChart
-  type TableXYDataset     = org.jfree.data.xy.TableXYDataset
-  type TimeSeries         = org.jfree.data.time.TimeSeries
-  type TimeSeriesDataItem = org.jfree.data.time.TimeSeriesDataItem
-  type TimeTableXYDataset = org.jfree.data.time.TimeTableXYDataset
-  type XYDataset          = org.jfree.data.xy.XYDataset
+  type CategoryDataset      = org.jfree.data.category.CategoryDataset
+  type CategoryLabeller     = org.jfree.chart.labels.StandardCategoryItemLabelGenerator
+  type CategoryPlot         = org.jfree.chart.plot.CategoryPlot
+  type ChartFrame           = org.jfree.chart.ChartFrame
+  type DateAxis             = org.jfree.chart.axis.DateAxis
+  type JFreeChart           = org.jfree.chart.JFreeChart
+  type TableXYDataset       = org.jfree.data.xy.TableXYDataset
+  type TimeSeries           = org.jfree.data.time.TimeSeries
+  type TimeSeriesCollection = org.jfree.data.time.TimeSeriesCollection
+  type TimeSeriesDataItem   = org.jfree.data.time.TimeSeriesDataItem
+  type TimeTableXYDataset   = org.jfree.data.time.TimeTableXYDataset
+  type XYDataset            = org.jfree.data.xy.XYDataset
 }
 
 trait StaticImports {

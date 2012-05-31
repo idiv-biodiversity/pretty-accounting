@@ -60,3 +60,23 @@ object SlotsSequentialVsParallel extends ChartingApp {
     }
   ) saveAs extension
 }
+
+object ParallelUsage extends ChartingApp {
+  override lazy val name = "parallel-usage"
+
+  import scalaz.Scalaz._
+
+  val x: GenIterable[Map[DateTime,(Int,Int)]] = dispatched perMinute {
+    case par if par.parallelEnvironment.isDefined =>
+      (par.slots, 0)
+    case seq =>
+      (0,1)
+  }
+
+  createLineChart (
+    title   = name.localized,
+    dataset = x.fold(Map())(_ |+| _) mapValues {
+      case (p,s) => p.toDouble / (p+s)
+    }
+  )
+}

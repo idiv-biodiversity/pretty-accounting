@@ -17,6 +17,15 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
   } yield (s to e by 1.minute map { _ -> d } toMap)
 
   class JobsPimp(jobs: GenIterable[Job]) {
+    def perMinute[A](f: Job => A): GenIterable[Map[DateTime,A]] = for {
+      job <- jobs
+      s   =  job.time.start withSecondOfMinute 0
+      e   =  job.time.end   withSecondOfMinute 0
+      d   =  f(job)
+    } yield (s to e by 1.minute map {
+      _ -> d
+    } toMap)
+
     def toTimeslots(f: Job => Double)
                    (implicit interval: Option[Interval]): Map[DateTime,Double] = {
       import scalaz.Scalaz._
