@@ -168,29 +168,50 @@ trait RichCharting extends TypeImports with StaticImports {
     chart
   }
 
-  implicit def pimpedJFreeChart(chart: JFreeChart) = new JFreeChartPimp(chart)
+  /** Implicitly enriches a JFreeChart. */
+  implicit def enrichJFreeChart(chart: JFreeChart) = new RichChart(chart)
 
-  class JFreeChartPimp(chart: JFreeChart) {
+  /** Enriched JFreeChart. */
+  class RichChart(chart: JFreeChart) {
 
-    def show(implicit title: String = "") = onEDT {
-      new ChartFrame(title, chart, true) setVisible true
+    /** Shows the chart in a window. */
+    def show = onEDT {
+      new ChartFrame("", chart, true) setVisible true
     }
 
-    def saveAs(ext: String)(implicit output: File, dim: Pair[Int,Int]): Unit = ext.toLowerCase match {
+    /** Saves the chart.
+      *
+      * @param ext extension of the file / output type, currently supported are PNG, JPEG and PDF
+      * @param output file to where will be written
+      * @param dim dimension / geometry / width x height of the output
+      */
+    def saveAs(ext: String)
+              (implicit output: File,
+                        dim: Pair[Int,Int]): Unit = ext.toLowerCase match {
       case "pdf"          => saveAsPDF
       case "png"          => saveAsPNG
       case "jpg" | "jpeg" => saveAsJPEG
-      case _              => sys error ("""Extension "%s" is not supported.""" format ext)
+      case _              => sys error """Extension "%s" is not supported.""".format(ext)
     }
 
     // -------------------------------------------------------------------
     // save wrappers
     // -------------------------------------------------------------------
 
+    /** Saves the chart as a PNG image.
+      *
+      * @param output file to where will be written
+      * @param dim dimension / geometry / width x height of the output
+      */
     def saveAsPNG(implicit output: File, dim: Pair[Int,Int]) {
       saveChartAsPNG(output, chart, dim._1, dim._2)
     }
 
+    /** Saves the chart as a JPEG image.
+      *
+      * @param output file to where will be written
+      * @param dim dimension / geometry / width x height of the output
+      */
     def saveAsJPEG(implicit output: File, dim: Pair[Int,Int]) {
       saveChartAsJPEG(output, chart, dim._1, dim._2)
     }
@@ -203,6 +224,12 @@ trait RichCharting extends TypeImports with StaticImports {
     import com.lowagie.text._
     import com.lowagie.text.pdf._
 
+    /** Saves the chart as a PDF.
+      *
+      * @param output file to where will be written
+      * @param dim dimension / geometry / width x height of the output
+      * @param fontMapper handles mappings between Java AWT Fonts and PDF fonts
+      */
     def saveAsPDF(implicit output: File, dim: Pair[Int,Int], fontMapper: FontMapper = new DefaultFontMapper) {
       implicit val os = new BufferedOutputStream(new FileOutputStream(output))
 
@@ -213,6 +240,12 @@ trait RichCharting extends TypeImports with StaticImports {
       }
     }
 
+    /** Writes the chart as a PDF.
+      *
+      * @param os stream to where will be written
+      * @param dim dimension / geometry / width x height of the output
+      * @param fontMapper handles mappings between Java AWT Fonts and PDF fonts
+      */
     def writeAsPDF(implicit os: OutputStream, dim: Pair[Int,Int], fontMapper: FontMapper) {
       val (width,height) = dim
 
