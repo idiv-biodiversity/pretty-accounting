@@ -193,6 +193,6 @@ case class Job (
     * This value is calculated with the assumption that the job did not use more cores than
     * requested.
     */
-  lazy val efficiency: Double = (res.cputime / slots) / res.wctime
+  def efficiency: Double = (res.cputime / slots) / res.wctime
 
 }
