@@ -5,11 +5,17 @@ object Job {
   object JobId {
     def apply(s: String, t: String): JobId = {
       val parts = s split ":"
-      JobId(id = parts(1).toInt, task = t.toInt, name = parts(0))
+      JobId(job = parts(1).toInt, task = t.toInt, name = parts(0))
     }
   }
 
-  case class JobId(id: Int, task: Int, name: String)
+  /** Represents the identity of a job.
+    *
+    * @param job ID of the job
+    * @param task ID of the task of array jobs
+    * @param name the name of the job
+    */
+  case class JobId(job: Int, task: Int, name: String)
 
   object User {
     def apply(s: String): User = {
@@ -174,7 +180,7 @@ case class Job (
     queue: Option[String],
     node: Option[String],
     user: User,
-    jobId: JobId,
+    id: JobId,
     account: String,
     priority: Double,
     time: Time,
