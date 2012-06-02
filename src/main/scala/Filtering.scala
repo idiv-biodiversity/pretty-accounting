@@ -3,10 +3,15 @@ package grid
 object Filtering extends Filtering
 
 trait Filtering {
-  lazy val ExcludeGIDs = "circular|root|wkdv|hpcworks|extusers|pws".r
+
+  /** Returns the regular expression for excluding group IDs. It gets set by the system property
+    * `grid.exclude.gids`, defaults to `"root"`.
+    */
+  lazy val ExcludeGIDsRegex = sys.props.get("grid.exclude.gids").getOrElse("root").r
+
   lazy val epochstart  = new DateTime("1970-01-01T01:00:00.000+01:00")
 
-  def nonAdminAndExternalGIDs(j: Job) = ExcludeGIDs.unapplySeq(j.user.gid).isEmpty
+  def gids(j: Job) = ExcludeGIDsRegex.unapplySeq(j.user.gid).isEmpty
 
   def successful(j: Job) = j.status.successful
   def failed    (j: Job) = j.status.failed
@@ -20,5 +25,6 @@ trait Filtering {
 
   def isDispatched(j: Job) = j.res.wctime > 0
 
-  def combined(j: Job) = nonAdminAndExternalGIDs(j) && realJob(j)
+  def combined(j: Job) = gids(j) && realJob(j)
+
 }
