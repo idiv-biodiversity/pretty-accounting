@@ -3,11 +3,9 @@ package grid
 object Parsing extends Parsing
 
 trait Parsing extends Filtering with TypeImports {
-  def accountingFilePath: String = verbosef("accounting file: %s",
-    sys.props get "grid.accounting.file" getOrElse {
-      sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
-    }
-  )
+  def accountingFilePath: String = sys.props get "grid.accounting.file" getOrElse {
+    sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
+  }
 
   def accountingFileLines: GenIterable[String] =
     scalax.io.Resource.fromURL("file://" + accountingFilePath).lines().toIterable.par
