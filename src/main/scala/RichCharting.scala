@@ -10,13 +10,15 @@ import org.jfree.data.time._
 
 object RichCharting extends RichCharting
 
-trait RichCharting extends TypeImports with StaticImports {
+trait RichCharting extends RichTime with TypeImports with StaticImports {
 
   // -------------------------------------------------------------------
   // implicit conversions
   // -------------------------------------------------------------------
 
   implicit def joda2jfreeminute(d: DateTime): Minute = new Minute(d.toDate)
+
+  implicit def joda2jfreeday(d: LocalDate): Day = new Day(d.toString.toDateTime.toDate)
 
   implicit def interval2timeperiod(i: Interval): SimpleTimePeriod =
     new SimpleTimePeriod(i.start.toDate, i.end.toDate)
