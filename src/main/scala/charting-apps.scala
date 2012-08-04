@@ -16,18 +16,20 @@ trait ChartingApp extends AccountingApp {
 object JobsPerUser extends ChartingApp {
   override lazy val name = "jobs-per-user"
 
+  val data = interval map { implicit interval =>
+    dispatched filter { isBetween(_) }
+  } getOrElse {
+    dispatched
+  } groupBy {
+    _.user.uid
+  } mapValues {
+    _.size
+  }
+
   createLabelledBarChart (
     title   = name.localized,
-    dataset = interval map { implicit interval =>
-      dispatched filter { isBetween(_) }
-    } getOrElse {
-      dispatched
-    } groupBy {
-      _.user.uid
-    } mapValues {
-      _.size
-    }
-  ) saveAs extension
+    dataset = data.seq.toCategoryDataset
+  ) save ( extension, output, dim )
 }
 
 object SlotsPerQueue extends ChartingApp {
@@ -35,8 +37,8 @@ object SlotsPerQueue extends ChartingApp {
 
   createStackedAreaChart (
     title   = name.localized,
-    dataset = dispatched groupBy { _.queue.get } toTimeslots { _.slots }
-  ) saveAs extension
+    dataset = dispatched groupBy { _.queue.get } toTimeslots { _.slots } toTimeTable
+  ) save ( extension, output, dim )
 }
 
 object SlotsRunVsWait extends ChartingApp {
@@ -44,8 +46,8 @@ object SlotsRunVsWait extends ChartingApp {
 
   createStackedAreaChart (
     title   = name.localized,
-    dataset = raw filter realJob filter isDispatched toPendingVsRunning
-  ) saveAs extension
+    dataset = (raw filter realJob filter isDispatched toPendingVsRunning) toTimeTable
+  ) save ( extension, output, dim )
 }
 
 object SlotsSequentialVsParallel extends ChartingApp {
@@ -53,30 +55,32 @@ object SlotsSequentialVsParallel extends ChartingApp {
 
   createStackedAreaChart (
     title   = name.localized,
-    dataset = dispatched groupBy {
-      j => if (parallel(j)) "parallel".localized else "sequential".localized
+    dataset = dispatched groupBy { j =>
+      if (parallel(j)) "parallel".localized else "sequential".localized
     } toTimeslots {
       _.slots
-    }
-  ) saveAs extension
+    } toTimeTable
+  ) save ( extension, output, dim )
 }
 
 object ParallelUsage extends ChartingApp {
   override lazy val name = "parallel-usage"
 
-  val x: GenIterable[Map[DateTime,(Int,Int)]] = dispatched perMinute {
+  import scalaz.Scalaz._
+
+  val xs = dispatched perMinute {
     case par if par.parallelEnvironment.isDefined =>
       (par.slots, 0)
     case seq =>
       (0,1)
   }
 
-  import scalaz.Scalaz._
+  val data = xs.fold(Map())(_ |+| _) mapValues {
+    case (p,s) => p.toDouble / (p+s)
+  }
 
   createLineChart (
     title   = name.localized,
-    dataset = x.fold(Map())(_ |+| _) mapValues {
-      case (p,s) => p.toDouble / (p+s)
-    }
-  ) saveAs extension
+    dataset = data.toTimeSeriesCollection
+  ) save ( extension, output, dim )
 }

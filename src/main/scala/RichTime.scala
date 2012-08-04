@@ -51,4 +51,18 @@ trait RichTime {
   implicit val LocalDateOrdering = new Ordering[LocalDate] {
     def compare(a: LocalDate, b: LocalDate) = a.compareTo(b)
   }
+
+  // -----------------------------------------------------------------------------------------------
+  // joda to jfreechart conversions
+  // -----------------------------------------------------------------------------------------------
+
+  import org.jfree.data.time.{Minute ⇒ JMinute, Day ⇒ JDay, SimpleTimePeriod}
+
+  implicit def joda2jfreeminute(d: DateTime): JMinute = new JMinute(d.toDate)
+
+  implicit def joda2jfreeday(d: LocalDate): JDay = new JDay(d.toDateTimeAtStartOfDay.toDate)
+
+  implicit def interval2timeperiod(i: Interval): SimpleTimePeriod =
+    new SimpleTimePeriod(i.start.toDate, i.end.toDate)
+
 }

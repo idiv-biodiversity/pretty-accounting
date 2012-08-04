@@ -27,17 +27,14 @@ object PrettyAccountingBuild extends Build {
         import scala.math._
         import scala.swing.Swing._
         import org.scala_tools.time.Imports._
-        import org.jfree.chart._
-        import org.jfree.chart.ChartFactory._
-        import org.jfree.data.time._
-        import org.jfree.data.time.MovingAverage._
+        import org.sfree.chart.Charting._
       """,
       initialCommands in (Compile, consoleQuick) <<= initialCommands in Compile,
       initialCommands in Compile in console += """
         import grid._
         import grid.Accounting._
       """,
-      libraryDependencies ++= Seq ( chart, pdf, swing, time, specs2, iocore, iofile, scalaz )
+      libraryDependencies ++= Seq ( chart, time, specs2, iocore, iofile, scalaz )
     )
   )
 
@@ -52,12 +49,10 @@ object Resolvers {
 }
 
 object Dependencies {
-  lazy val chart  = "org.jfree"                     %  "jfreechart"    % "1.0.14"
-  lazy val pdf    = "com.lowagie"                   %  "itext"         % "2.1.7"
-  lazy val swing  = "org.scala-lang"                %  "scala-swing"   % buildScalaVersion
+  lazy val chart  = "org.sfree"                     %% "sfreechart"    % "latest.integration"
   lazy val time   = "org.scala-tools.time"          %% "time"          % "0.5"
   lazy val scalaz = "org.scalaz"                    %% "scalaz-core"   % "6.0.4"
   lazy val iocore = "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.0"
   lazy val iofile = "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.0"
-  lazy val specs2 = "org.specs2"                    %% "specs2"        % "1.10" % "test"
+  lazy val specs2 = "org.specs2"                    %% "specs2"        % "1.12" % "test"
 }
