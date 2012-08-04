@@ -34,13 +34,13 @@ trait RichTime {
     def toLocalDateOption = try {
       Some(toLocalDate)
     } catch {
-      case e: IllegalArgumentException => None
+      case e: IllegalArgumentException ⇒ None
     }
 
     def toDateTimeOption = try {
       Some(toDateTime)
     } catch {
-      case e: IllegalArgumentException => None
+      case e: IllegalArgumentException ⇒ None
     }
   }
 

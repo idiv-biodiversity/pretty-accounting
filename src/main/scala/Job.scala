@@ -162,8 +162,8 @@ object Job {
       val rst   = parts(1).toLong
 
       (rid + rst) match {
-        case 0 => None
-        case _ => Some (
+        case 0 ⇒ None
+        case _ ⇒ Some (
           Reservation(id = rid, submission = rst)
         )
       }

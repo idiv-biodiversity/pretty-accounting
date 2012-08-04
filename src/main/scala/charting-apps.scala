@@ -9,14 +9,14 @@ trait ChartingApp extends AccountingApp {
   def defaultExtension = "png"
 
   implicit lazy val dim = sys.props get "grid.accounting.chart.geometry" collect {
-    case ChartingApp.geometry(w,h) => w.toInt -> h.toInt
-  } getOrElse 1920 -> 1080
+    case ChartingApp.geometry(w,h) ⇒ w.toInt → h.toInt
+  } getOrElse 1920 → 1080
 }
 
 object JobsPerUser extends ChartingApp {
   override lazy val name = "jobs-per-user"
 
-  val data = interval map { implicit interval =>
+  val data = interval map { implicit interval ⇒
     dispatched filter { isBetween(_) }
   } getOrElse {
     dispatched
@@ -55,7 +55,7 @@ object SlotsSequentialVsParallel extends ChartingApp {
 
   createStackedAreaChart (
     title   = name.localized,
-    dataset = dispatched groupBy { j =>
+    dataset = dispatched groupBy { j ⇒
       if (parallel(j)) "parallel".localized else "sequential".localized
     } toTimeslots {
       _.slots
@@ -69,14 +69,14 @@ object ParallelUsage extends ChartingApp {
   import scalaz.Scalaz._
 
   val xs = dispatched perMinute {
-    case par if par.parallelEnvironment.isDefined =>
+    case par if par.parallelEnvironment.isDefined ⇒
       (par.slots, 0)
-    case seq =>
+    case seq ⇒
       (0,1)
   }
 
   val data = xs.fold(Map())(_ |+| _) mapValues {
-    case (p,s) => p.toDouble / (p+s)
+    case (p,s) ⇒ p.toDouble / (p+s)
   }
 
   createLineChart (

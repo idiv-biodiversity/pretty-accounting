@@ -11,7 +11,7 @@ trait Parsing extends Filtering with TypeImports {
     scalax.io.Resource.fromURL("file://" + accountingFilePath).lines().toIterable.par
 
   def raw(implicit lines: GenIterable[String] = accountingFileLines) = lines collect {
-    case AccountingEntry(job) => job
+    case AccountingEntry(job) ⇒ job
   }
 
   def jobs(implicit lines: GenIterable[String] = accountingFileLines) =
@@ -35,11 +35,11 @@ trait Parsing extends Filtering with TypeImports {
     def unapply(s: String) = s match {
       case sixtwoufiveEntry(queue, node, user, jobId, account, priority, time, status, res, acl,
       parallelEnvironment, slots, taskNumber, cpu, mem, io, resReq, iow, parallelTaskId, maxvmem,
-      reservation) =>
+      reservation) ⇒
 
       Some(Job(
-        queue match { case UNKNOWN => None ; case queue => Some(queue) },
-        node  match { case UNKNOWN => None ; case node  => Some(node)  },
+        queue match { case UNKNOWN ⇒ None ; case queue ⇒ Some(queue) },
+        node  match { case UNKNOWN ⇒ None ; case node  ⇒ Some(node)  },
         User(user),
         JobId(jobId, taskNumber),
         account,
@@ -48,19 +48,19 @@ trait Parsing extends Filtering with TypeImports {
         Status(status),
         ResourceUsage(res,cpu,mem,maxvmem,io,iow),
         Acl(acl),
-        parallelEnvironment match { case NONE => None ; case s => Some(s) },
+        parallelEnvironment match { case NONE ⇒ None ; case s ⇒ Some(s) },
         slots.toInt,
-        resReq         match { case NONE => None ; case s => Some(s) },
-        parallelTaskId match { case NONE => None ; case s => Some(s) },
+        resReq         match { case NONE ⇒ None ; case s ⇒ Some(s) },
+        parallelTaskId match { case NONE ⇒ None ; case s ⇒ Some(s) },
         Reservation(reservation)
       ))
 
       case sixzeroueightEntry(queue, node, user, jobId, account, priority, time, status, res, acl,
-      parallelEnvironment, slots, taskNumber, cpu, mem, io, resReq, iow, parallelTaskId, maxvmem) =>
+      parallelEnvironment, slots, taskNumber, cpu, mem, io, resReq, iow, parallelTaskId, maxvmem) ⇒
 
       Some(Job(
-        queue match { case UNKNOWN => None ; case queue => Some(queue) },
-        node  match { case UNKNOWN => None ; case node  => Some(node)  },
+        queue match { case UNKNOWN ⇒ None ; case queue ⇒ Some(queue) },
+        node  match { case UNKNOWN ⇒ None ; case node  ⇒ Some(node)  },
         User(user),
         JobId(jobId, taskNumber),
         account,
@@ -69,14 +69,14 @@ trait Parsing extends Filtering with TypeImports {
         Status(status),
         ResourceUsage(res,cpu,mem,maxvmem,io,iow),
         Acl(acl),
-        parallelEnvironment match { case NONE => None ; case s => Some(s) },
+        parallelEnvironment match { case NONE ⇒ None ; case s ⇒ Some(s) },
         slots.toInt,
-        resReq         match { case NONE => None ; case s => Some(s) },
-        parallelTaskId match { case NONE => None ; case s => Some(s) },
+        resReq         match { case NONE ⇒ None ; case s ⇒ Some(s) },
+        parallelTaskId match { case NONE ⇒ None ; case s ⇒ Some(s) },
         None
       ))
 
-      case _ => None
+      case _ ⇒ None
     }
   }
 }

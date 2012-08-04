@@ -6,9 +6,9 @@ package object grid extends org.scala_tools.time.Imports {
 
   class CollWrapper[A](coll: GenTraversableOnce[A]) {
 
-    def sortWith(lt: (A, A) => Boolean): List[A] = coll.toList.sortWith(lt)
+    def sortWith(lt: (A, A) ⇒ Boolean): List[A] = coll.toList.sortWith(lt)
 
-    def sortBy[B](f: A => B)(implicit ord: Ordering[B]): List[A] = coll.toList.sortBy(f)(ord)
+    def sortBy[B](f: A ⇒ B)(implicit ord: Ordering[B]): List[A] = coll.toList.sortBy(f)(ord)
 
     def sorted[B >: A](implicit ord: Ordering[B]): List[A] = coll.toList.sorted(ord)
 
@@ -17,7 +17,7 @@ package object grid extends org.scala_tools.time.Imports {
   implicit def mapwrap[A,B](m: GenMap[A,B]) = new MapWrapper(m)
 
   class MapWrapper[A,B](m: GenMap[A,B]) {
-    def mapValues[C](f: B => C): GenMap[A,C] = m map { x => x._1 -> f(x._2) }
+    def mapValues[C](f: B ⇒ C): GenMap[A,C] = m map { x ⇒ x._1 → f(x._2) }
   }
 
   // -------------------------------------------------------------------
@@ -31,7 +31,7 @@ package object grid extends org.scala_tools.time.Imports {
     def localized = try {
       java.util.ResourceBundle getBundle "PABundle" getString s
     } catch {
-      case _ => s
+      case _ ⇒ s
     }
   }
 
