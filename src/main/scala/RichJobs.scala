@@ -1,5 +1,8 @@
 package grid
 
+import language.postfixOps
+import language.implicitConversions
+
 object RichJobs extends RichJobs
 
 trait RichJobs extends Filtering with RichTime with TypeImports {

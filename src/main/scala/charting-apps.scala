@@ -1,5 +1,7 @@
 package grid
 
+import language.postfixOps
+
 object ChartingApp {
   /** Returns the regex used to parse width and height. */
   def geometry = """(\d+)x(\d+)""".r
@@ -26,9 +28,10 @@ object JobsPerUser extends ChartingApp {
     _.size
   }
 
-  createLabelledBarChart (
+  createBarChart (
     title   = name.localized,
-    dataset = data.seq.toCategoryDataset
+    dataset = data.seq.toCategoryDataset,
+    labels  = true
   ) save ( extension, output, dim )
 }
 
@@ -81,6 +84,6 @@ object ParallelUsage extends ChartingApp {
 
   createLineChart (
     title   = name.localized,
-    dataset = data.toTimeSeriesCollection
+    dataset = data.toTimeSeriesCollection("name.localized")
   ) save ( extension, output, dim )
 }

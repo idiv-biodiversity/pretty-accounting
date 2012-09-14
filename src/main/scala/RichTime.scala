@@ -1,5 +1,7 @@
 package grid
 
+import language.implicitConversions
+
 object RichTime extends RichTime
 
 trait RichTime {

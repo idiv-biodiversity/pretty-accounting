@@ -1,5 +1,7 @@
 package grid
 
+import language.implicitConversions
+
 object Accounting extends Accounting
 object TypeImports extends TypeImports
 object StaticImports extends StaticImports

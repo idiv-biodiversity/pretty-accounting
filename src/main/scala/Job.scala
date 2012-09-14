@@ -48,7 +48,7 @@ object Job {
 
   object Status {
     def apply(s: String): Status = {
-      val parts = s split ":" map { _ toInt }
+      val parts = s split ":" map { _.toInt }
       Status(grid = parts(0), script = parts(1))
     }
   }

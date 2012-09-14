@@ -29,8 +29,8 @@ trait AccountingApp extends App with Accounting {
     case "year"    ⇒ val now = DateTime.now ; (now - 1.year)   to now
     case AccountingApp.IntervalExtractor(interval) ⇒ interval
   } orElse {
-    val start = sys.props get "grid.accounting.start" flatMap { _ toDateTimeOption }
-    val end   = sys.props get "grid.accounting.end"   flatMap { _ toDateTimeOption }
+    val start = sys.props get "grid.accounting.start" flatMap { _.toDateTimeOption }
+    val end   = sys.props get "grid.accounting.end"   flatMap { _.toDateTimeOption }
 
     (start ⊛ end) { _ to _ }
   }
