@@ -78,7 +78,7 @@ object ParallelUsage extends ChartingApp {
       (0,1)
   }
 
-  val data = xs.fold(Map())(_ |+| _) mapValues {
+  val data = xs.fold(Map())(_ ⊹ _) mapValues {
     case (p,s) ⇒ p.toDouble / (p+s)
   }
 

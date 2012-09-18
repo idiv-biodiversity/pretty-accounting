@@ -50,7 +50,7 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
         _ → data
       } toMap)
 
-      ts.fold(Map())(_ |+| _)
+      ts.fold(Map())(_ ⊹ _)
     }
 
     def toPendingVsRunning(implicit interval: Option[Interval]): Map[String,Map[DateTime,Int]] = {
@@ -61,8 +61,8 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
       } getOrElse { jobs }
 
       Map (
-        "waiting".localized → timeslots(filtered)(_.slots,_.time.submission,_.time.start).fold(Map())(_ |+| _),
-        "running".localized → timeslots(filtered)(_.slots,_.time.start     ,_.time.end  ).fold(Map())(_ |+| _)
+        "waiting".localized → timeslots(filtered)(_.slots,_.time.submission,_.time.start).fold(Map())(_ ⊹ _),
+        "running".localized → timeslots(filtered)(_.slots,_.time.start     ,_.time.end  ).fold(Map())(_ ⊹ _)
       )
     }
 
@@ -105,9 +105,9 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
 
         wai = (sub to sta by 1.minute map { _ → (0,slo) }).toMap
         run = (sta to end by 1.minute map { _ → (slo,0) }).toMap
-      } yield (wai |+| run)
+      } yield (wai ⊹ run)
 
-      stuff.fold(Map())(_ |+| _)
+      stuff.fold(Map())(_ ⊹ _)
     }
   }
 
