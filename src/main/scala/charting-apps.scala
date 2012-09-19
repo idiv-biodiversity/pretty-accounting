@@ -58,11 +58,7 @@ object SlotsSequentialVsParallel extends ChartingApp {
 
   createStackedAreaChart (
     title   = name.localized,
-    dataset = dispatched groupBy { j ⇒
-      if (parallel(j)) "parallel".localized else "sequential".localized
-    } toTimeslots {
-      _.slots
-    } toTimeTable
+    dataset = dispatched groupBy SeqVsPar toTimeslots { _.slots } toTimeTable
   ) save ( extension, output, dim )
 }
 
