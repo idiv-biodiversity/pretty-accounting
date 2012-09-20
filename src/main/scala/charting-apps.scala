@@ -35,6 +35,24 @@ object JobsPerUser extends ChartingApp {
   ) save ( extension, output, dim )
 }
 
+object SlotsPerGroup extends ChartingApp {
+  override lazy val name = "slots-per-group"
+
+  createStackedAreaChart (
+    title   = name.localized,
+    dataset = dispatched groupBy { _.acl.department } toTimeslots { _.slots } toTimeTable
+  ) save ( extension, output, dim )
+}
+
+object SlotsPerProject extends ChartingApp {
+  override lazy val name = "slots-per-project"
+
+  createStackedAreaChart (
+    title   = name.localized,
+    dataset = dispatched groupBy { _.acl.project } toTimeslots { _.slots } toTimeTable
+  ) save ( extension, output, dim )
+}
+
 object SlotsPerQueue extends ChartingApp {
   override lazy val name = "slots-per-queue"
 
