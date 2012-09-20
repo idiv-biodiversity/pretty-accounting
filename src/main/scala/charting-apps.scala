@@ -2,21 +2,28 @@ package grid
 
 import language.postfixOps
 
+import org.jfree.chart.JFreeChart
+
 object ChartingApp {
   /** Returns the regex used to parse width and height. */
   def geometry = """(\d+)x(\d+)""".r
 }
 
 trait ChartingApp extends AccountingApp {
+  /** Returns the chart that will be saved. */
+  def chart: JFreeChart
+
   def defaultExtension = "png"
 
-  implicit lazy val dim = sys.props get "grid.accounting.chart.geometry" collect {
+  def dim = sys.props get "grid.accounting.chart.geometry" collect {
     case ChartingApp.geometry(w,h) ⇒ w.toInt → h.toInt
   } getOrElse 1920 → 1080
+
+  chart.save(extension, output, dim)
 }
 
 object JobsPerUser extends ChartingApp {
-  override lazy val name = "jobs-per-user"
+  def name = "jobs-per-user"
 
   val data = interval map { implicit interval ⇒
     dispatched filter { isBetween(_) }
@@ -28,76 +35,72 @@ object JobsPerUser extends ChartingApp {
     _.size
   }
 
-  createBarChart (
+  def chart = createBarChart (
     title   = name.localized,
     dataset = data.seq.toCategoryDataset,
     labels  = true
-  ) save ( extension, output, dim )
+  )
 }
 
 object SlotsPerGroup extends ChartingApp {
-  override lazy val name = "slots-per-group"
+  def name = "slots-per-group"
 
-  createStackedAreaChart (
+  def chart = createStackedAreaChart (
     title   = name.localized,
     dataset = dispatched groupBy { _.acl.department } toTimeslots { _.slots } toTimeTable
-  ) save ( extension, output, dim )
+  )
 }
 
 object SlotsPerProject extends ChartingApp {
-  override lazy val name = "slots-per-project"
+  def name = "slots-per-project"
 
-  createStackedAreaChart (
+  def chart = createStackedAreaChart (
     title   = name.localized,
     dataset = dispatched groupBy { _.acl.project } toTimeslots { _.slots } toTimeTable
-  ) save ( extension, output, dim )
+  )
 }
 
 object SlotsPerQueue extends ChartingApp {
-  override lazy val name = "slots-per-queue"
+  def name = "slots-per-queue"
 
-  createStackedAreaChart (
+  def chart = createStackedAreaChart (
     title   = name.localized,
     dataset = dispatched groupBy { _.queue.get } toTimeslots { _.slots } toTimeTable
-  ) save ( extension, output, dim )
+  )
 }
 
 object SlotsRunVsWait extends ChartingApp {
-  override lazy val name = "slots-run-vs-wait"
+  def name = "slots-run-vs-wait"
 
-  createStackedAreaChart (
+  def chart = createStackedAreaChart (
     title   = name.localized,
     dataset = (raw filter realJob filter isDispatched toPendingVsRunning) toTimeTable
-  ) save ( extension, output, dim )
+  )
 }
 
 object SlotsSequentialVsParallel extends ChartingApp {
-  override lazy val name = "slots-seq-vs-par"
+  def name = "slots-seq-vs-par"
 
-  createStackedAreaChart (
+  def chart = createStackedAreaChart (
     title   = name.localized,
     dataset = dispatched groupBy SeqVsPar toTimeslots { _.slots } toTimeTable
-  ) save ( extension, output, dim )
+  )
 }
 
 object ParallelUsage extends ChartingApp {
-  override lazy val name = "parallel-usage"
+  def name = "parallel-usage"
 
   import scalaz.Scalaz._
 
-  val xs = dispatched perMinute {
-    case par if par.parallelEnvironment.isDefined ⇒
-      (par.slots, 0)
-    case seq ⇒
-      (0,1)
-  }
-
-  val data = xs.fold(Map())(_ ⊹ _) mapValues {
-    case (p,s) ⇒ p.toDouble / (p+s)
-  }
-
-  createLineChart (
+  def chart = createLineChart (
     title   = name.localized,
-    dataset = data.toTimeSeriesCollection("name.localized")
-  ) save ( extension, output, dim )
+    dataset = dispatched.perMinute({
+      case par if par.parallelEnvironment.isDefined ⇒ (par.slots, 0)
+      case seq                                      ⇒ (0        , 1)
+    }).fold(Map()) {
+      _ ⊹ _
+    } mapValues {
+      case (p,s) ⇒ p.toDouble / (p+s)
+    } toTimeSeriesCollection name.localized
+  )
 }
