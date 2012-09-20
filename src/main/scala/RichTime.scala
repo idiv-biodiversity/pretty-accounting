@@ -5,15 +5,14 @@ import language.implicitConversions
 object RichTime extends RichTime
 
 trait RichTime {
-  def thisYear = {
+
+  /** Returns the interval from the start of this year up to now. */
+  def thisYear: Interval = {
     val now = DateTime.now
     now.withDayOfYear(1).withMillisOfDay(0) to now
   }
 
-  implicit def intervalpimp(interval: Interval) = new IntervalPimp(interval)
-  implicit def string2richstring(s: String) = new RichString(s)
-
-  class IntervalPimp(interval: Interval) {
+  implicit class RichInterval(interval: Interval) {
     import org.joda.time.ReadablePeriod
 
     def by(d: ReadablePeriod) = {
@@ -29,7 +28,7 @@ trait RichTime {
     }
   }
 
-  class RichString(s: String) {
+  implicit class RichString(s: String) {
     def toLocalDate = new LocalDate(s)
     def toDateTime  = new DateTime(s)
 
@@ -58,7 +57,11 @@ trait RichTime {
   // joda to jfreechart conversions
   // -----------------------------------------------------------------------------------------------
 
-  import org.jfree.data.time.{Minute ⇒ JMinute, Day ⇒ JDay, SimpleTimePeriod}
+  import org.jfree.data.time.{
+    Minute ⇒ JMinute,
+    Day ⇒ JDay,
+    SimpleTimePeriod
+  }
 
   implicit def joda2jfreeminute(d: DateTime): JMinute = new JMinute(d.toDate)
 

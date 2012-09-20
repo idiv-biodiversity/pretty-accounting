@@ -6,10 +6,8 @@ import language.implicitConversions
 object RichJobs extends RichJobs
 
 trait RichJobs extends Filtering with RichTime with TypeImports {
-  // TODO toTimeslots with variable slot period
-  implicit def jobspimp(l: GenIterable[Job]) = new JobsPimp(l)
-  implicit def jobcategorypimp[A](m: GenMap[A,GenIterable[Job]]) = new JobsCategoryPimp(m)
 
+  /** @todo variable slot period */
   def timeslots[A](jobs: GenIterable[Job])
                   (f: Job ⇒ A, start: Job ⇒ DateTime, end: Job ⇒ DateTime)
                   : GenIterable[Map[DateTime,A]] = for {
@@ -19,7 +17,7 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
     d   = f(job)
   } yield (s to e by 1.minute map { _ → d } toMap)
 
-  class JobsPimp(jobs: GenIterable[Job]) {
+  implicit class RichJobs(jobs: GenIterable[Job]) {
     def perMinute[A](f: Job ⇒ A): GenIterable[Map[DateTime,A]] = for {
       job ← jobs
       s   = job.time.start withSecondOfMinute 0
@@ -111,7 +109,7 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
     }
   }
 
-  class JobsCategoryPimp[A](groupedJobs: GenMap[A,GenIterable[Job]]) {
+  implicit class RichCategorizedJobs[A](groupedJobs: GenMap[A,GenIterable[Job]]) {
     def toTimeslots(f: Job ⇒ Double)
                    (implicit interval: Option[Interval]): Map[A,Map[DateTime,Double]] =
       groupedJobs.mapValues(_.toTimeslots(f)).seq.toMap
