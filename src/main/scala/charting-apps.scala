@@ -35,7 +35,7 @@ object JobsPerUser extends ChartingApp {
     _.size
   }
 
-  def chart = createBarChart (
+  def chart = BarChart (
     title   = name.localized,
     dataset = data.seq.toCategoryDataset,
     labels  = true
@@ -45,7 +45,7 @@ object JobsPerUser extends ChartingApp {
 object SlotsPerGroup extends ChartingApp {
   def name = "slots-per-group"
 
-  def chart = createStackedAreaChart (
+  def chart = StackedAreaChart (
     title   = name.localized,
     dataset = dispatched groupBy { _.acl.department } toTimeslots { _.slots } toTimeTable
   )
@@ -54,7 +54,7 @@ object SlotsPerGroup extends ChartingApp {
 object SlotsPerProject extends ChartingApp {
   def name = "slots-per-project"
 
-  def chart = createStackedAreaChart (
+  def chart = StackedAreaChart (
     title   = name.localized,
     dataset = dispatched groupBy { _.acl.project } toTimeslots { _.slots } toTimeTable
   )
@@ -63,7 +63,7 @@ object SlotsPerProject extends ChartingApp {
 object SlotsPerQueue extends ChartingApp {
   def name = "slots-per-queue"
 
-  def chart = createStackedAreaChart (
+  def chart = StackedAreaChart (
     title   = name.localized,
     dataset = dispatched groupBy { _.queue.get } toTimeslots { _.slots } toTimeTable
   )
@@ -72,7 +72,7 @@ object SlotsPerQueue extends ChartingApp {
 object SlotsRunVsWait extends ChartingApp {
   def name = "slots-run-vs-wait"
 
-  def chart = createStackedAreaChart (
+  def chart = StackedAreaChart (
     title   = name.localized,
     dataset = (raw filter realJob filter isDispatched toPendingVsRunning) toTimeTable
   )
@@ -81,7 +81,7 @@ object SlotsRunVsWait extends ChartingApp {
 object SlotsSequentialVsParallel extends ChartingApp {
   def name = "slots-seq-vs-par"
 
-  def chart = createStackedAreaChart (
+  def chart = StackedAreaChart (
     title   = name.localized,
     dataset = dispatched groupBy SeqVsPar toTimeslots { _.slots } toTimeTable
   )
@@ -92,7 +92,7 @@ object ParallelUsage extends ChartingApp {
 
   import scalaz.Scalaz._
 
-  def chart = createLineChart (
+  def chart = LineChart (
     title   = name.localized,
     dataset = dispatched.perMinute({
       case par if par.parallelEnvironment.isDefined ⇒ (par.slots, 0)
