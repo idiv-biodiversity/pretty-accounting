@@ -30,7 +30,7 @@ object JobsPerUser extends ChartingApp {
   } getOrElse {
     dispatched
   } groupBy {
-    _.user.uid
+    owner
   } mapValues {
     _.size
   }
@@ -47,7 +47,7 @@ object SlotsPerGroup extends ChartingApp {
 
   def chart = StackedAreaChart (
     title   = name.localized,
-    dataset = dispatched groupBy { _.acl.department } toTimeslots { _.slots } toTimeTable
+    dataset = dispatched groupBy department toTimeslots { _.slots } toTimeTable
   )
 }
 
@@ -56,7 +56,7 @@ object SlotsPerProject extends ChartingApp {
 
   def chart = StackedAreaChart (
     title   = name.localized,
-    dataset = dispatched groupBy { _.acl.project } toTimeslots { _.slots } toTimeTable
+    dataset = dispatched groupBy project toTimeslots { _.slots } toTimeTable
   )
 }
 
