@@ -3,11 +3,11 @@ name := "pretty-accounting"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.10.0-RC1"
+scalaVersion := "2.10.0-RC2"
 
 libraryDependencies ++= Seq (
   "org.sfree"                     %% "sfreechart"            % "latest.integration",
-  "org.scala-tools.time"          %  "time_2.9.1"            % "0.5",
+  "org.scalaj"                    %  "scalaj-time_2.10.0-M7" % "0.6",
   "org.scalaz"                    %  "scalaz-core_2.10.0-M7" % "6.0.4",
   "com.github.scala-incubator.io" %% "scala-io-core"         % "0.4.1",
   "com.github.scala-incubator.io" %% "scala-io-file"         % "0.4.1",

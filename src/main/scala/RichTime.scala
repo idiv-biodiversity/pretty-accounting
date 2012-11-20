@@ -45,11 +45,11 @@ trait RichTime {
     }
   }
 
-  implicit val DateTimeOrdering = new Ordering[DateTime] {
+  implicit val DateTimeOrdering: Ordering[DateTime] = new Ordering[DateTime] {
     def compare(a: DateTime, b: DateTime) = a.compareTo(b)
   }
 
-  implicit val LocalDateOrdering = new Ordering[LocalDate] {
+  implicit val LocalDateOrdering: Ordering[LocalDate] = new Ordering[LocalDate] {
     def compare(a: LocalDate, b: LocalDate) = a.compareTo(b)
   }
 
