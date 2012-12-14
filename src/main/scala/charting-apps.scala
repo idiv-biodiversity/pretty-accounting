@@ -23,10 +23,28 @@ trait ChartingApp extends AccountingApp {
   chart.save(extension, output, dim)
 }
 
+object CPUTimePerDepartment extends ChartingApp {
+  def name = "cputime-per-department"
+
+  def data = interval map { implicit interval ⇒
+    dispatched filter { isBetween(_) }
+  } getOrElse {
+    dispatched
+  } groupBy department mapValues {
+    _.aggregate(0.0)(_ + _.res.cputime, _ + _)
+  }
+
+  def chart = PieChart (
+    title   = name.localized,
+    dataset = data.seq.sortBy(_._2).toPieDataset,
+    legend  = false
+  )
+}
+
 object JobsPerUser extends ChartingApp {
   def name = "jobs-per-user"
 
-  val data = interval map { implicit interval ⇒
+  def data = interval map { implicit interval ⇒
     dispatched filter { isBetween(_) }
   } getOrElse {
     dispatched
@@ -39,7 +57,7 @@ object JobsPerUser extends ChartingApp {
   def chart = {
     val chart = BarChart (
       title   = name.localized,
-      dataset = data.seq.toCategoryDataset
+      dataset = data.seq.sortBy(_._2).toCategoryDataset
     )
     chart.labels  = true
     chart

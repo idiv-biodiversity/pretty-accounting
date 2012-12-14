@@ -44,7 +44,7 @@ trait AccountingApp extends App with Accounting {
   } filter {
     _.isDirectory
   } getOrElse {
-    sys.env("HOME")
+    sys.props get "java.io.tmpdir" getOrElse util.Properties.userHome
   }
 
   implicit lazy val output: java.io.File = "%s%s%s.%s" format (
