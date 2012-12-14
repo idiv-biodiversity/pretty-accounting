@@ -41,6 +41,20 @@ object CPUTimePerDepartment extends ChartingApp {
   )
 }
 
+object CPUTimePerDepartmentPerQuarter extends ChartingApp {
+  def name = "cputime-per-department"
+
+  def data = dispatched groupBy quarter_of_start mapValues {
+    _.groupBy(department).mapValues(_.aggregate(0.0)(_ + _.res.cputime, _ + _)).seq.sortBy(_._2)
+  }
+
+  def chart = MultiplePieChart (
+    title   = name.localized,
+    dataset = data.seq.sortBy(_._1).toCategoryDataset,
+    legend  = false
+  )
+}
+
 object JobsPerUser extends ChartingApp {
   def name = "jobs-per-user"
 
