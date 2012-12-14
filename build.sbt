@@ -3,15 +3,15 @@ name := "pretty-accounting"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.10.0-RC2"
+scalaVersion := "2.10.0-RC5"
 
 libraryDependencies ++= Seq (
-  "org.sfree"                     %% "sfreechart"            % "latest.integration",
-  "org.scalaj"                    %  "scalaj-time_2.10.0-M7" % "0.6",
-  "org.scalaz"                    %  "scalaz-core_2.10.0-M7" % "6.0.4",
-  "com.github.scala-incubator.io" %% "scala-io-core"         % "0.4.1",
-  "com.github.scala-incubator.io" %% "scala-io-file"         % "0.4.1",
-  "org.specs2"                    %% "specs2"                % "1.12.2" % "test" cross CrossVersion.full
+  "com.github.wookietreiber.sfreechart" %% "sfreechart"            % "0.1.0" cross CrossVersion.full,
+  "org.scalaj"                          %  "scalaj-time_2.10.0-M7" % "0.6",
+  "org.scalaz"                          %% "scalaz-core"           % "6.0.4" cross CrossVersion.full,
+  "com.github.scala-incubator.io"       %% "scala-io-core"         % "0.4.1",
+  "com.github.scala-incubator.io"       %% "scala-io-file"         % "0.4.1",
+  "org.specs2"                          %% "specs2"                % "1.12.3" % "test" cross CrossVersion.full
 )
 
 initialCommands in Compile += """
