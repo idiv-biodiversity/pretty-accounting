@@ -2,7 +2,7 @@ import language.implicitConversions
 
 import scala.collection.GenTraversableOnce
 
-package object grid extends org.scala_tools.time.Imports {
+package object grid extends com.github.nscala_time.time.Imports {
 
   implicit class RichCollection[A](coll: GenTraversableOnce[A]) {
     def sortWith(lt: (A, A) ⇒ Boolean): List[A] = coll.toList.sortWith(lt)
