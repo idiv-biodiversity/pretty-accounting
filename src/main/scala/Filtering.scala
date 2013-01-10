@@ -21,6 +21,9 @@ trait Filtering {
   def isBetween(j: Job)(implicit interval: Interval) =
     (j.time.end isAfter interval.start) && (j.time.start isBefore interval.end)
 
+  def startedBetween(j: Job)(implicit interval: Interval) =
+    (j.time.start isAfter interval.start) && (j.time.start isBefore interval.end)
+
   def realJob(j: Job) = j.queue.nonEmpty && j.node.nonEmpty  && (j.time.submission != epochstart)
 
   def isDispatched(j: Job) = j.res.wctime > 0
