@@ -2,6 +2,8 @@ package grid
 
 import language.implicitConversions
 
+import scala.util.Try
+
 object RichTime extends RichTime
 
 trait RichTime {
@@ -40,20 +42,9 @@ trait RichTime {
   }
 
   implicit class RichString(self: String) {
-    def toLocalDate = new LocalDate(self)
-    def toDateTime  = new DateTime(self)
-
-    def toLocalDateOption = try {
-      Some(toLocalDate)
-    } catch {
-      case e: IllegalArgumentException ⇒ None
-    }
-
-    def toDateTimeOption = try {
-      Some(toDateTime)
-    } catch {
-      case e: IllegalArgumentException ⇒ None
-    }
+    def toInterval: Try[Interval] = Try(new Interval(self))
+    def toLocalDate: Try[LocalDate] = Try(new LocalDate(self))
+    def toDateTime: Try[DateTime] = Try(new DateTime(self))
   }
 
   implicit val DateTimeOrdering: Ordering[DateTime] = new Ordering[DateTime] {

@@ -4,12 +4,7 @@ import scalaz.Scalaz._
 
 object AccountingApp extends Accounting {
   object IntervalExtractor {
-    val intervalRE = """(\d{4}-\d{2}-\d{2})/(\d{4}-\d{2}-\d{2})""".r
-
-    def unapply(s: String): Option[Interval] = s match {
-      case intervalRE(from,to) ⇒ (from.toDateTimeOption ⊛ to.toDateTimeOption) { _ to _ }
-      case _ ⇒ None
-    }
+    def unapply(s: String): Option[Interval] = s.toInterval.toOption
   }
 }
 
@@ -29,8 +24,12 @@ trait AccountingApp extends App with Accounting {
     case "year"    ⇒ val now = DateTime.now ; (now - 1.year)   to now
     case AccountingApp.IntervalExtractor(interval) ⇒ interval
   } orElse {
-    val start = sys.props get "grid.accounting.start" flatMap { _.toDateTimeOption }
-    val end   = sys.props get "grid.accounting.end"   flatMap { _.toDateTimeOption }
+    sys.props get "grid.accounting.year" flatMap { y ⇒ y.toDateTime.toOption } map {
+      year ⇒ year to (year + 1.year)
+    }
+  } orElse {
+    val start = sys.props get "grid.accounting.start" flatMap { _.toDateTime.toOption }
+    val end   = sys.props get "grid.accounting.end"   flatMap { _.toDateTime.toOption }
 
     (start ⊛ end) { _ to _ }
   }
