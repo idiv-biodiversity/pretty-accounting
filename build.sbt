@@ -18,7 +18,6 @@ initialCommands in Compile += """
   import scalaz._
   import Scalaz._
   import scala.math._
-  import scala.swing.Swing._
   import com.github.nscala_time.time.Imports._
   import org.sfree.chart.Charting._
 """
