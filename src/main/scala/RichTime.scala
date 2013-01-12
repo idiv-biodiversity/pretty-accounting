@@ -14,10 +14,8 @@ trait RichTime {
     now.withDayOfYear(1).withMillisOfDay(0) to now
   }
 
-  implicit class RichDate(self: DateTime) {
-    def getQuarterOfYear: String = quarter
-
-    def quarter: String = self.getMonthOfYear match {
+  implicit class RichGridDateTime(self: DateTime) {
+    def getQuarterOfYear: String = self.getMonthOfYear match {
       case q1 if ( 1 <= q1) && (q1 <=  3) ⇒ "Q1"
       case q2 if ( 4 <= q2) && (q2 <=  6) ⇒ "Q2"
       case q3 if ( 7 <= q3) && (q3 <=  9) ⇒ "Q3"

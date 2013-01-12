@@ -38,8 +38,8 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
       import scalaz.Scalaz._
 
       val ts: GenIterable[Map[DateTime,Double]] = for {
-        job   ← interval map { implicit interval ⇒
-                  jobs filter { isBetween(_) }
+        job   ← interval map { interval ⇒
+                  jobs filter isBetween(interval)
                 } getOrElse(jobs)
         start = job.time.start withSecondOfMinute 0
         end   = job.time.end   withSecondOfMinute 0
@@ -54,8 +54,8 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
     def toPendingVsRunning(implicit interval: Option[Interval]): Map[String,Map[DateTime,Int]] = {
       import scalaz.Scalaz._
 
-      val filtered = interval map { implicit interval ⇒
-        jobs filter { isBetween(_) }
+      val filtered = interval map { interval ⇒
+        jobs filter isBetween(interval)
       } getOrElse { jobs }
 
       Map (
@@ -65,8 +65,8 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
     }
 
     def efficiency(f: Job ⇒ Double)(implicit interval: Option[Interval]) = {
-      val filtered = interval map { implicit interval ⇒
-        jobs filter { isBetween(_) }
+      val filtered = interval map { interval ⇒
+        jobs filter isBetween(interval)
       } getOrElse(jobs)
 
       val fSum      = filtered map f sum
@@ -88,8 +88,8 @@ trait RichJobs extends Filtering with RichTime with TypeImports {
     def waste(implicit interval: Option[Interval], slotmax: Int): GenMap[DateTime,(Int,Int)] = {
       import scalaz.Scalaz._
 
-      val filtered = interval map { implicit interval ⇒
-        jobs filter { isBetween(_) }
+      val filtered = interval map { interval ⇒
+        jobs filter isBetween(interval)
       } getOrElse(jobs)
 
       val stuff: GenIterable[Map[DateTime,(Int,Int)]] = for {

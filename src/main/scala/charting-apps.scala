@@ -26,8 +26,8 @@ trait ChartingApp extends AccountingApp {
 object CPUTimePerDepartment extends ChartingApp {
   def name = "cputime-per-department"
 
-  def data = interval map { implicit interval ⇒
-    dispatched filter { isBetween(_) }
+  def data = interval map { interval ⇒
+    dispatched filter isBetween(interval)
   } getOrElse {
     dispatched
   } groupBy department mapValues {
@@ -44,7 +44,12 @@ object CPUTimePerDepartment extends ChartingApp {
 object CPUTimePerDepartmentPerQuarter extends ChartingApp {
   def name = "cputime-per-department"
 
-  def data = dispatched groupBy quarter_of_start mapValues {
+  def data = interval map { interval ⇒
+    // TODO need seq here because otherwise bug in ParVector
+    dispatched.seq filter startedBetween(interval)
+  } getOrElse {
+    dispatched
+  } groupBy quarter_of_start mapValues {
     _.groupBy(department).mapValues(_.aggregate(0.0)(_ + _.res.cputime, _ + _)).seq.sortBy(_._2)
   }
 
@@ -58,8 +63,8 @@ object CPUTimePerDepartmentPerQuarter extends ChartingApp {
 object JobsPerUser extends ChartingApp {
   def name = "jobs-per-user"
 
-  def data = interval map { implicit interval ⇒
-    dispatched filter { isBetween(_) }
+  def data = interval map { interval ⇒
+    dispatched filter isBetween(interval)
   } getOrElse {
     dispatched
   } groupBy {
