@@ -1,8 +1,11 @@
 package grid
 
+import grid.Filtering._
+import grid.TypeImports._
+
 object Parsing extends Parsing
 
-trait Parsing extends Filtering with TypeImports {
+trait Parsing {
   def accountingFilePath: String = sys.props get "grid.accounting.file" getOrElse {
     sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
   }

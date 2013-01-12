@@ -9,7 +9,7 @@ object Implicits extends Implicits
 object FileImplicits extends FileImplicits
 
 trait Accounting extends TypeImports with StaticImports
-  with Categorizing with Parsing with Filtering with RichJobs
+  with Categorizing with Parsing with Filtering with RichTime with RichJobs
   with org.sfree.chart.Charting
   with Implicits {
 }

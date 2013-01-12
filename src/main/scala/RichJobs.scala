@@ -3,9 +3,13 @@ package grid
 import language.postfixOps
 import language.implicitConversions
 
+import grid.Filtering._
+import grid.RichTime._
+import grid.TypeImports._
+
 object RichJobs extends RichJobs
 
-trait RichJobs extends Filtering with RichTime with TypeImports {
+trait RichJobs {
 
   /** @todo variable slot period */
   def timeslots[A](jobs: GenIterable[Job])
