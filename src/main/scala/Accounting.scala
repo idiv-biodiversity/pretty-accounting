@@ -3,29 +3,28 @@ package grid
 import language.implicitConversions
 
 object Accounting extends Accounting
-object TypeImports extends TypeImports
-object StaticImports extends StaticImports
+trait Accounting extends Imports with Implicits with org.sfree.chart.Charting
+  with Categorizing with Filtering with Parsing with RichJobs with RichTime
+
 object Implicits extends Implicits
-object FileImplicits extends FileImplicits
-
-trait Accounting extends TypeImports with StaticImports
-  with Categorizing with Parsing with Filtering with RichTime with RichJobs
-  with org.sfree.chart.Charting
-  with Implicits {
-}
-
 trait Implicits extends FileImplicits
 
+object FileImplicits extends FileImplicits
 trait FileImplicits {
   implicit def string2file(s: String) = new java.io.File(s)
 }
 
+object Imports extends Imports
+trait Imports extends TypeImports with StaticImports
+
+object TypeImports extends TypeImports
 trait TypeImports {
   type GenIterable[A] = scala.collection.GenIterable[A]
   type GenMap[A,B]    = scala.collection.GenMap[A,B]
   type GenSeq[A]      = scala.collection.GenSeq[A]
 }
 
+object StaticImports extends StaticImports
 trait StaticImports {
   def fileSeparator = java.io.File.separator
 }
