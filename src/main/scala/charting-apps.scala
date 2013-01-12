@@ -32,11 +32,13 @@ object CPUTimePerDepartment extends ChartingApp {
     dispatched
   } groupBy department mapValues {
     _.aggregate(0.0)(_ + _.res.cputime, _ + _)
+  } sortBy {
+    _._2
   }
 
   def chart = PieChart (
     title   = name.localized,
-    dataset = data.seq.sortBy(_._2).toPieDataset,
+    dataset = data.toPieDataset,
     legend  = false
   )
 }
@@ -50,12 +52,14 @@ object CPUTimePerDepartmentPerQuarter extends ChartingApp {
   } getOrElse {
     dispatched
   } groupBy quarter_of_start mapValues {
-    _.groupBy(department).mapValues(_.aggregate(0.0)(_ + _.res.cputime, _ + _)).seq.sortBy(_._2)
+    _ groupBy { department } mapValues { _.aggregate(0.0)(_ + _.res.cputime, _ + _) } sortBy { _._2 }
+  } sortBy {
+    _._1
   }
 
   def chart = MultiplePieChart (
     title   = name.localized,
-    dataset = data.seq.sortBy(_._1).toCategoryDataset,
+    dataset = data.toCategoryDataset,
     legend  = false
   )
 }
@@ -71,12 +75,14 @@ object JobsPerUser extends ChartingApp {
     owner
   } mapValues {
     _.size
+  } sortBy {
+    _._2
   }
 
   def chart = {
     val chart = BarChart (
       title   = name.localized,
-      dataset = data.seq.sortBy(_._2).toCategoryDataset
+      dataset = data.toCategoryDataset
     )
     chart.labels  = true
     chart
