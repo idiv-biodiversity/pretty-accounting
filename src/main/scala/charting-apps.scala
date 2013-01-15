@@ -16,6 +16,8 @@ trait ChartingApp extends AccountingApp {
 
   def defaultExtension = "png"
 
+  lazy val excludePercent = sys.props.getOrElse("grid.accounting.chart.pie.exclude", "0.01").toDouble
+
   def dim = sys.props get "grid.accounting.chart.geometry" collect {
     case ChartingApp.geometry(w,h) ⇒ w.toInt → h.toInt
   } getOrElse 1920 → 1080
@@ -26,14 +28,16 @@ trait ChartingApp extends AccountingApp {
 object CPUTimePerDepartment extends ChartingApp {
   def name = "cputime-per-department"
 
-  def data = interval map { interval ⇒
-    dispatched filter isBetween(interval)
-  } getOrElse {
-    dispatched
-  } groupBy department mapValues {
-    _.aggregate(0.0)(_ + _.res.cputime, _ + _)
-  } sortBy {
-    _._2
+  def data = {
+    val cxs = interval map { interval ⇒
+      dispatched filter isBetween(interval)
+    } getOrElse {
+      dispatched
+    } groupBy department mapValues {
+      _.aggregate(0.0)(_ + _.res.cputime, _ + _)
+    }
+    val sum = cxs.aggregate(0.0)(_ + _._2, _ + _)
+    cxs filter { _._2 / sum > excludePercent } sortBy { _._2 }
   }
 
   def chart = PieChart (
@@ -47,16 +51,18 @@ object CPUTimePerDepartmentPerQuarter extends ChartingApp {
   def name = "cputime-per-department"
 
   def data = interval map { interval ⇒
-    // TODO need seq here because otherwise bug in ParVector
-    dispatched.seq filter startedBetween(interval)
+    dispatched filter startedBetween(interval)
   } getOrElse {
     dispatched
-  } groupBy quarter_of_start mapValues {
-    _ groupBy { department } mapValues { _.aggregate(0.0)(_ + _.res.cputime, _ + _) } sortBy { _._2 }
+  } groupBy quarter_of_start mapValues { quarterly ⇒
+    val cxs = quarterly groupBy { department } mapValues { _.aggregate(0.0)(_ + _.res.cputime, _ + _) }
+    val sum = cxs.aggregate(0.0)(_ + _._2, _ + _)
+    cxs filter { _._2 / sum > excludePercent } sortBy { _._2 }
   } sortBy {
     _._1
   }
 
+  // TODO sort each pie chart by value
   def chart = MultiplePieChart (
     title   = name.localized,
     dataset = data.toCategoryDataset,
