@@ -17,8 +17,10 @@ trait Parsing {
     case AccountingEntry(job) ⇒ job
   }
 
-  def jobs(implicit lines: GenIterable[String] = accountingFileLines) =
-    raw filter combined
+  def jobs(implicit lines: GenIterable[String] = accountingFileLines) = {
+    val exclude = ExcludeGIDsRegex
+    raw filter combined(exclude)
+  }
 
   def dispatched = jobs filter isDispatched
 
