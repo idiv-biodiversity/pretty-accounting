@@ -9,7 +9,7 @@ libraryDependencies ++= Seq (
   "com.github.wookietreiber"      %% "scala-chart"   % "0.2.0",
   "com.github.nscala-time"        %% "nscala-time"   % "0.2.0",
   "org.scalaz"                    %% "scalaz-core"   % "6.0.4",
-  "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.1",
+  "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2",
   "org.specs2"                    %% "specs2"        % "1.14" % "test"
 )
 
