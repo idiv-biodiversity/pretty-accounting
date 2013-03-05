@@ -30,6 +30,10 @@ trait Filtering {
   val isBetween: Interval ⇒ Job ⇒ Boolean = (interval: Interval) ⇒ (j: Job) ⇒
     (j.time.end isAfter interval.start) && (j.time.start isBefore interval.end)
 
+  /** Returns a function that filters jobs by whether they were submitted somewhere in the interval. */
+  val submittedBetween: Interval ⇒ Job ⇒ Boolean = (interval: Interval) ⇒ (j: Job) ⇒
+    (j.time.submission isAfter interval.start) && (j.time.submission isBefore interval.end)
+
   /** Returns a function that filters jobs by whether they were started somewhere in the interval. */
   val startedBetween: Interval ⇒ Job ⇒ Boolean = (interval: Interval) ⇒ (j: Job) ⇒
     (j.time.start isAfter interval.start) && (j.time.start isBefore interval.end)

@@ -79,14 +79,13 @@ trait RichJobs {
       fSum / wctimeSum
     }
 
-    def average[A](f: Job ⇒ A)
-                  (implicit size: GenIterable[Job] ⇒ Int = { _.size },
-                            num: Numeric[A]): Double = {
+    def averageBy[A: Numeric](f: Job ⇒ A): Double = {
+      val num = implicitly[Numeric[A]]
       import num._
 
-      val sum = jobs.foldLeft(zero) { _ + f(_) }
+      val sum = jobs.aggregate(zero)(_ + f(_), _ + _)
 
-      sum.toDouble / size(jobs)
+      sum.toDouble / jobs.size
     }
 
     def waste(implicit interval: Option[Interval], slotmax: Int): GenMap[DateTime,(Int,Int)] = {

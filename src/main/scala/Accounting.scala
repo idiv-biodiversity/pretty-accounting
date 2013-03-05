@@ -3,7 +3,7 @@ package grid
 import language.implicitConversions
 
 object Accounting extends Accounting
-trait Accounting extends Imports with Implicits with org.sfree.chart.Charting
+trait Accounting extends Imports with Implicits with scalax.chart.Charting
   with Categorizing with Filtering with Parsing with RichJobs with RichTime
 
 object Implicits extends Implicits

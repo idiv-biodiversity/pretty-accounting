@@ -15,7 +15,7 @@ trait AccountingApp extends App with Accounting {
   /** Returns the default output file extension. */
   def defaultExtension: String
 
-  implicit lazy val interval: Option[Interval] = sys.props get "grid.accounting.interval" map {
+  implicit def interval: Option[Interval] = sys.props get "grid.accounting.interval" map {
     _.trim.toLowerCase
   } collect {
     case "week"    ⇒ val now = DateTime.now ; (now - 1.week)   to now
@@ -34,11 +34,11 @@ trait AccountingApp extends App with Accounting {
     (start ⊛ end) { _ to _ }
   }
 
-  lazy val extension: String = sys.props get "grid.accounting.output.extension" getOrElse {
+  def extension: String = sys.props get "grid.accounting.output.extension" getOrElse {
     defaultExtension
   }
 
-  lazy val outputPath: String = sys.props get "grid.accounting.output.path" map { dir ⇒
+  def outputPath: String = sys.props get "grid.accounting.output.path" map { dir ⇒
     if (dir endsWith fileSeparator) dir substring (0, dir.length - 1) else dir
   } filter {
     _.isDirectory
@@ -46,7 +46,7 @@ trait AccountingApp extends App with Accounting {
     sys.props get "java.io.tmpdir" getOrElse util.Properties.userHome
   }
 
-  implicit lazy val output: java.io.File = "%s%s%s.%s" format (
+  def output: java.io.File = "%s%s%s.%s" format (
     outputPath,
     fileSeparator,
     sys.props get "grid.accounting.output.name" getOrElse {

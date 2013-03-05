@@ -2,8 +2,7 @@ package grid
 
 import language.postfixOps
 
-import org.jfree.chart.JFreeChart
-import org.sfree.chart.Charting._
+import scalax.chart._
 
 object ChartingApp {
   /** Returns the regex used to parse width and height. */
@@ -12,17 +11,21 @@ object ChartingApp {
 
 trait ChartingApp extends AccountingApp {
   /** Returns the chart that will be saved. */
-  def chart: JFreeChart
+  def chart: StorableChart
 
   def defaultExtension = "png"
 
-  lazy val excludePercent = sys.props.getOrElse("grid.accounting.chart.pie.exclude", "0.01").toDouble
+  def excludePercent = sys.props.getOrElse("grid.accounting.chart.pie.exclude", "0.01").toDouble
 
   def dim = sys.props get "grid.accounting.chart.geometry" collect {
     case ChartingApp.geometry(w,h) ⇒ w.toInt → h.toInt
   } getOrElse 1920 → 1080
 
-  chart.save(extension, output, dim)
+  extension.toLowerCase match {
+    case "pdf" ⇒ chart.saveAsPDF(output, dim)
+    case "png" ⇒ chart.saveAsPNG(output, dim)
+    case "jpg" | "jpeg" ⇒ chart.saveAsJPEG(output, dim)
+  }
 }
 
 object CPUTimePerDepartment extends ChartingApp {
@@ -43,6 +46,31 @@ object CPUTimePerDepartment extends ChartingApp {
   def chart = PieChart (
     title   = name.localized,
     dataset = data.toPieDataset,
+    legend  = false
+  )
+}
+
+object CPUTimePerDepartmentPerMonth extends ChartingApp {
+  def name = "cputime-per-department"
+
+  def data = interval map { interval ⇒
+    dispatched.seq filter startedBetween(interval)
+  } getOrElse {
+    dispatched
+  } groupBy month_of_start mapValues { quarterly ⇒
+    val cxs = quarterly groupBy { department } mapValues { _.aggregate(0.0)(_ + _.res.cputime, _ + _) }
+    val sum = cxs.aggregate(0.0)(_ + _._2, _ + _)
+    cxs filter { _._2 / sum > excludePercent } sortBy { _._2 }
+  } sortBy {
+    _._1
+  } map { case(k,v) ⇒
+    org.joda.time.format.DateTimeFormat.forPattern("MMMM YYYY").print(k) → v
+  }
+
+  // TODO sort each pie chart by value
+  def chart = MultiplePieChart (
+    title   = name.localized,
+    dataset = data.toCategoryDataset,
     legend  = false
   )
 }
@@ -70,6 +98,33 @@ object CPUTimePerDepartmentPerQuarter extends ChartingApp {
   )
 }
 
+object DiskUsage extends ChartingApp {
+  def name = "disk-usage-data"
+
+  def data = {
+    val GBRE = """([\d.]+)G""".r
+    val MBRE = """([\d.]+)M""".r
+    val TBRE = """([\d.]+)T""".r
+
+    val xys = scalax.io.Resource.fromFile("/tmp/disk-usage.txt").lines().par map { line ⇒
+      val ps = line.split("\t")
+      ps(1) → (ps(0) match {
+        case MBRE(mb) ⇒ mb.toDouble * math.pow(2,20)
+        case GBRE(gb) ⇒ gb.toDouble * math.pow(2,30)
+        case TBRE(tb) ⇒ tb.toDouble * math.pow(2,40)
+      }).round
+    }
+    val sum = xys.aggregate(0.0)(_ + _._2, _ + _)
+    xys filter { _._2 / sum > excludePercent } sortBy { _._2 }
+  }
+
+  def chart = PieChart (
+    title   = name.localized,
+    dataset = data.toPieDataset,
+    legend  = false
+  )
+}
+
 object JobsPerUser extends ChartingApp {
   def name = "jobs-per-user"
 
@@ -90,7 +145,7 @@ object JobsPerUser extends ChartingApp {
       title   = name.localized,
       dataset = data.toCategoryDataset
     )
-    chart.labels  = true
+    chart.labelGenerator = (dataset: CategoryDataset, row: Int, col: Int) ⇒ dataset.getValue(row, col).toString
     chart
   }
 }
@@ -155,5 +210,45 @@ object ParallelUsage extends ChartingApp {
     } mapValues {
       case (p,s) ⇒ p.toDouble / (p+s)
     } toTimeSeriesCollection name.localized
+  )
+}
+
+// originally: jobs per hour
+// throughput: in slots per hour / slots per day
+/*
+object Throughput extends ChartingApp {
+  def name = "throughput"
+}
+*/
+
+object TurnaroundTime extends ChartingApp {
+  def name = "turnaround-time"
+
+  def data = interval map { interval ⇒
+    dispatched filter submittedBetween(interval)
+  } getOrElse {
+    dispatched
+  } groupBy month_of_submission map { case (date,js) ⇒
+    date.toDate → (js.map(j ⇒ j.time.waiting.millis.toDouble / j.time.turnaround.millis).toList)
+  }
+
+  def chart = {
+    val c = XYBoxAndWhiskerChart (
+      title = name.localized,
+      dataset = data.seq.toBoxAndWhiskerXYDataset()
+    )
+    val axis = c.plot.getRangeAxis.asInstanceOf[org.jfree.chart.axis.NumberAxis]
+    axis.setNumberFormatOverride(java.text.NumberFormat.getPercentInstance)
+    c
+  }
+}
+
+// keep the CPU busy all time
+object Utilization extends ChartingApp {
+  def name = "utilization"
+
+  def chart = XYAreaChart (
+    title   = name.localized,
+    dataset = dispatched.toTimeslots(_.slots).toTimeSeriesCollection("")
   )
 }

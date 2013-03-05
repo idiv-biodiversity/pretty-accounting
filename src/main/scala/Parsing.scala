@@ -11,7 +11,7 @@ trait Parsing {
   }
 
   def accountingFileLines: GenIterable[String] =
-    scalax.io.Resource.fromURL("file://" + accountingFilePath).lines().toIterable.par
+    scalax.io.Resource.fromFile(accountingFilePath).lines().par
 
   def raw(implicit lines: GenIterable[String] = accountingFileLines) = lines collect {
     case AccountingEntry(job) ⇒ job

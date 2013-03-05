@@ -19,6 +19,9 @@ trait Categorizing {
   /** Returns a function that categorizes jobs by the month of their submission. */
   val month_of_submission: Job ⇒ LocalDate = (job: Job) ⇒ job.time.submission.toLocalDate.withDayOfMonth(1)
 
+  /** Returns a function that categorizes jobs by the monthly period they were started. */
+  val month_of_start: Job ⇒ LocalDate = (job: Job) ⇒ job.time.start.toLocalDate.withDayOfMonth(1)
+
   /** Returns a function that categorizes jobs by the quarterly period they were started. */
   val quarter_of_start: Job ⇒ String = (job: Job) ⇒ {
     val quarter = job.time.start.getQuarterOfYear
