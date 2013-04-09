@@ -3,11 +3,11 @@ name := "pretty-accounting"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.1"
 
 libraryDependencies ++= Seq (
   "com.github.wookietreiber"      %% "scala-chart"   % "0.2.0",
-  "com.github.nscala-time"        %% "nscala-time"   % "0.2.0",
+  "com.github.nscala-time"        %% "nscala-time"   % "0.4.0",
   "org.scalaz"                    %% "scalaz-core"   % "6.0.4",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2",
   "org.specs2"                    %% "specs2"        % "1.14" % "test"
