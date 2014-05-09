@@ -104,8 +104,8 @@ trait RichJobs {
 
         slo = job.slots
 
-        wai = (sub to sta by 1.minute map { _ → (0,slo) }).toMap
-        run = (sta to end by 1.minute map { _ → (slo,0) }).toMap
+        wai = (sub to sta by 1.minute map { a => (a,(0,slo)) }).toMap
+        run = (sta to end by 1.minute map { a => (a,(slo,0)) }).toMap
       } yield (wai ⊹ run)
 
       stuff.fold(Map())(_ ⊹ _)
@@ -118,7 +118,9 @@ trait RichJobs {
       groupedJobs.mapValues(_.toTimeslots(f)).seq.toMap
 
     def efficiency(implicit interval: Option[Interval]) = for {
-      (group,jobs) ← groupedJobs
+      groupedJob   <- groupedJobs
+      group        = groupedJob._1
+      jobs         = groupedJob._2
       numjobs      = jobs.size
       ueff         = jobs.efficiency { j ⇒ (j.res.utime   / j.slots) }
       useff        = jobs.efficiency { j ⇒ (j.res.cputime / j.slots) }

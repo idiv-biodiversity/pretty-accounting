@@ -11,7 +11,7 @@ object ChartingApp {
 
 trait ChartingApp extends AccountingApp {
   /** Returns the chart that will be saved. */
-  def chart: StorableChart
+  def chart: Chart
 
   def defaultExtension = "png"
 
@@ -43,11 +43,7 @@ object CPUTimePerDepartment extends ChartingApp {
     cxs filter { _._2 / sum > excludePercent } sortBy { _._2 }
   }
 
-  def chart = PieChart (
-    title   = name.localized,
-    dataset = data.toPieDataset,
-    legend  = false
-  )
+  def chart = PieChart(data, title = name.localized, legend = false)
 }
 
 object CPUTimePerDepartmentPerMonth extends ChartingApp {
@@ -68,11 +64,7 @@ object CPUTimePerDepartmentPerMonth extends ChartingApp {
   }
 
   // TODO sort each pie chart by value
-  def chart = MultiplePieChart (
-    title   = name.localized,
-    dataset = data.toCategoryDataset,
-    legend  = false
-  )
+  def chart = MultiplePieChart(data, title = name.localized, legend = false)
 }
 
 object CPUTimePerDepartmentPerQuarter extends ChartingApp {
@@ -91,11 +83,7 @@ object CPUTimePerDepartmentPerQuarter extends ChartingApp {
   }
 
   // TODO sort each pie chart by value
-  def chart = MultiplePieChart (
-    title   = name.localized,
-    dataset = data.toCategoryDataset,
-    legend  = false
-  )
+  def chart = MultiplePieChart(data, title = name.localized, legend = false)
 }
 
 object DiskUsage extends ChartingApp {
@@ -118,11 +106,7 @@ object DiskUsage extends ChartingApp {
     xys filter { _._2 / sum > excludePercent } sortBy { _._2 }
   }
 
-  def chart = PieChart (
-    title   = name.localized,
-    dataset = data.toPieDataset,
-    legend  = false
-  )
+  def chart = PieChart(data, title = name.localized, legend = false)
 }
 
 object JobsPerUser extends ChartingApp {
@@ -141,11 +125,9 @@ object JobsPerUser extends ChartingApp {
   }
 
   def chart = {
-    val chart = BarChart (
-      title   = name.localized,
-      dataset = data.toCategoryDataset
-    )
-    chart.labelGenerator = (dataset: CategoryDataset, row: Int, col: Int) ⇒ dataset.getValue(row, col).toString
+    val chart = BarChart(data)
+    chart.title = name.localized
+    chart.labelGenerator = CategoryLabelGenerator.Default
     chart
   }
 }
@@ -154,8 +136,8 @@ object SlotsPerGroup extends ChartingApp {
   def name = "slots-per-group"
 
   def chart = XYAreaChart.stacked (
-    title   = name.localized,
-    dataset = dispatched groupBy department toTimeslots { _.slots } toTimeTable
+    title = name.localized,
+    data  = dispatched groupBy department toTimeslots { _.slots } toTimeTable
   )
 }
 
@@ -163,8 +145,8 @@ object SlotsPerProject extends ChartingApp {
   def name = "slots-per-project"
 
   def chart = XYAreaChart.stacked (
-    title   = name.localized,
-    dataset = dispatched groupBy project toTimeslots { _.slots } toTimeTable
+    title = name.localized,
+    data  = dispatched groupBy project toTimeslots { _.slots } toTimeTable
   )
 }
 
@@ -172,8 +154,8 @@ object SlotsPerQueue extends ChartingApp {
   def name = "slots-per-queue"
 
   def chart = XYAreaChart.stacked (
-    title   = name.localized,
-    dataset = dispatched groupBy { _.queue.get } toTimeslots { _.slots } toTimeTable
+    title = name.localized,
+    data  = dispatched groupBy { _.queue.get } toTimeslots { _.slots } toTimeTable
   )
 }
 
@@ -181,8 +163,8 @@ object SlotsRunVsWait extends ChartingApp {
   def name = "slots-run-vs-wait"
 
   def chart = XYAreaChart.stacked (
-    title   = name.localized,
-    dataset = (raw filter realJob filter isDispatched toPendingVsRunning) toTimeTable
+    title = name.localized,
+    data  = (raw filter realJob filter isDispatched toPendingVsRunning) toTimeTable
   )
 }
 
@@ -190,8 +172,8 @@ object SlotsSequentialVsParallel extends ChartingApp {
   def name = "slots-seq-vs-par"
 
   def chart = XYAreaChart.stacked (
-    title   = name.localized,
-    dataset = dispatched groupBy SeqVsPar toTimeslots { _.slots } toTimeTable
+    title = name.localized,
+    data  = dispatched groupBy SeqVsPar toTimeslots { _.slots } toTimeTable
   )
 }
 
@@ -201,8 +183,8 @@ object ParallelUsage extends ChartingApp {
   import scalaz.Scalaz._
 
   def chart = XYLineChart (
-    title   = name.localized,
-    dataset = dispatched.perMinute({
+    title = name.localized,
+    data = dispatched.perMinute({
       case par if par.parallelEnvironment.isDefined ⇒ (par.slots, 0)
       case seq                                      ⇒ (0        , 1)
     }).fold(Map()) {
@@ -222,9 +204,11 @@ object Throughput extends ChartingApp {
 */
 
 object TurnaroundTime extends ChartingApp {
+  implicit val numeric: Numeric[Double] = scala.math.Numeric.DoubleAsIfIntegral
+
   def name = "turnaround-time"
 
-  def data = interval map { interval ⇒
+  def data: collection.GenTraversableOnce[(java.util.Date,collection.Seq[Double])] = interval map { interval ⇒
     dispatched filter submittedBetween(interval)
   } getOrElse {
     dispatched
@@ -233,13 +217,11 @@ object TurnaroundTime extends ChartingApp {
   }
 
   def chart = {
-    val c = XYBoxAndWhiskerChart (
-      title = name.localized,
-      dataset = data.seq.toBoxAndWhiskerXYDataset()
-    )
-    val axis = c.plot.getRangeAxis.asInstanceOf[org.jfree.chart.axis.NumberAxis]
+    val chart = XYBoxAndWhiskerChart(data.toBoxAndWhiskerXYDataset())
+    chart.title = name.localized
+    val axis = chart.plot.getRangeAxis.asInstanceOf[org.jfree.chart.axis.NumberAxis]
     axis.setNumberFormatOverride(java.text.NumberFormat.getPercentInstance)
-    c
+    chart
   }
 }
 
@@ -248,7 +230,7 @@ object Utilization extends ChartingApp {
   def name = "utilization"
 
   def chart = XYAreaChart (
-    title   = name.localized,
-    dataset = dispatched.toTimeslots(_.slots).toTimeSeriesCollection("")
+    title = name.localized,
+    data  = dispatched.toTimeslots(_.slots).toTimeSeriesCollection("")
   )
 }

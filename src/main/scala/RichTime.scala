@@ -39,20 +39,6 @@ trait RichTime {
     }
   }
 
-  implicit class RichString(self: String) {
-    def toInterval: Try[Interval] = Try(new Interval(self))
-    def toLocalDate: Try[LocalDate] = Try(new LocalDate(self))
-    def toDateTime: Try[DateTime] = Try(new DateTime(self))
-  }
-
-  implicit val DateTimeOrdering: Ordering[DateTime] = new Ordering[DateTime] {
-    def compare(a: DateTime, b: DateTime) = a.compareTo(b)
-  }
-
-  implicit val LocalDateOrdering: Ordering[LocalDate] = new Ordering[LocalDate] {
-    def compare(a: LocalDate, b: LocalDate) = a.compareTo(b)
-  }
-
   // -----------------------------------------------------------------------------------------------
   // joda to jfreechart conversions
   // -----------------------------------------------------------------------------------------------

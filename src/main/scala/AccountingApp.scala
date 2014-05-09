@@ -4,7 +4,8 @@ import scalaz.Scalaz._
 
 object AccountingApp extends Accounting {
   object IntervalExtractor {
-    def unapply(s: String): Option[Interval] = s.toInterval.toOption
+    def unapply(s: String): Option[Interval] =
+      util.Try(new Interval(s)).toOption
   }
 }
 
@@ -24,12 +25,12 @@ trait AccountingApp extends App with Accounting {
     case "year"    ⇒ val now = DateTime.now ; (now - 1.year)   to now
     case AccountingApp.IntervalExtractor(interval) ⇒ interval
   } orElse {
-    sys.props get "grid.accounting.year" flatMap { y ⇒ y.toDateTime.toOption } map {
+    sys.props get "grid.accounting.year" flatMap { y ⇒ y.toDateTimeOption } map {
       year ⇒ year to (year + 1.year)
     }
   } orElse {
-    val start = sys.props get "grid.accounting.start" flatMap { _.toDateTime.toOption }
-    val end   = sys.props get "grid.accounting.end"   flatMap { _.toDateTime.toOption }
+    val start = sys.props get "grid.accounting.start" flatMap { _.toDateTimeOption }
+    val end   = sys.props get "grid.accounting.end"   flatMap { _.toDateTimeOption }
 
     (start ⊛ end) { _ to _ }
   }
@@ -46,7 +47,7 @@ trait AccountingApp extends App with Accounting {
     sys.props get "java.io.tmpdir" getOrElse util.Properties.userHome
   }
 
-  def output: java.io.File = "%s%s%s.%s" format (
+  def output: String = "%s%s%s.%s" format (
     outputPath,
     fileSeparator,
     sys.props get "grid.accounting.output.name" getOrElse {
