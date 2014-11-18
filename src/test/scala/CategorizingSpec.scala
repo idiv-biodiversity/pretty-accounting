@@ -2,20 +2,16 @@ package grid
 
 import org.specs2._
 
-class CategorizerSpec extends Specification with Accounting { def is =
+class CategorizerSpec extends Specification with Accounting { def is = s2"""
 
-  // -----------------------------------------------------------------------------------------------
-  // fragments
-  // -----------------------------------------------------------------------------------------------
-
-  "Categorizer Function Specification"                                                             ^
-    "month of submission"                                                       ! e1               ^
-    "project"                                                                   ! e2               ^
-    "department"                                                                ! e3               ^
-    "sequential vs parallel"                                                    ! e4               ^
-    "group"                                                                     ! e5               ^
-    "owner"                                                                     ! e6               ^
-                                                                                                 end
+  Categorizer Function Specification
+    month of submission                                                                   $e1
+    project                                                                               $e2
+    department                                                                            $e3
+    sequential vs parallel                                                                $e4
+    group                                                                                 $e5
+    owner                                                                                 $e6
+                                                                                                 """
   // -----------------------------------------------------------------------------------------------
   // tests
   // -----------------------------------------------------------------------------------------------
