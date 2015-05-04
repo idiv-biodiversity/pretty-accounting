@@ -6,6 +6,9 @@ import language.implicitConversions
 import grid.Filtering._
 import grid.TypeImports._
 
+import scalaz.std.AllInstances._
+import scalaz.syntax.monoid._
+
 object RichJobs extends RichJobs
 
 trait RichJobs {
@@ -38,7 +41,12 @@ trait RichJobs {
 
     def toTimeslots(f: Job ⇒ Double)
                    (implicit interval: Option[Interval]): Map[DateTime,Double] = {
-      import scalaz.Scalaz._
+      import scalaz.Monoid
+
+      implicit object DoubleMonoid extends Monoid[Double] {
+        def zero = 0.0
+        def append(x: Double, y: => Double) = x + y
+      }
 
       val ts: GenIterable[Map[DateTime,Double]] = for {
         job   ← interval map { interval ⇒
@@ -55,8 +63,6 @@ trait RichJobs {
     }
 
     def toPendingVsRunning(implicit interval: Option[Interval]): Map[String,Map[DateTime,Int]] = {
-      import scalaz.Scalaz._
-
       val filtered = interval map { interval ⇒
         jobs filter isBetween(interval)
       } getOrElse { jobs }
@@ -88,8 +94,6 @@ trait RichJobs {
     }
 
     def waste(implicit interval: Option[Interval], slotmax: Int): GenMap[DateTime,(Int,Int)] = {
-      import scalaz.Scalaz._
-
       val filtered = interval map { interval ⇒
         jobs filter isBetween(interval)
       } getOrElse(jobs)

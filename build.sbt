@@ -8,7 +8,7 @@ libraryDependencies ++= Seq (
   "com.lowagie"                   %  "itext"         % "4.2.1",
   "com.github.wookietreiber"      %% "scala-chart"   % "0.4.2",
   "com.github.nscala-time"        %% "nscala-time"   % "2.0.0",
-  "org.scalaz"                    %% "scalaz-core"   % "7.0.7",
+  "org.scalaz"                    %% "scalaz-core"   % "7.1.2",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3",
   "org.specs2"                    %% "specs2-core"   % "3.6" % "test"
 )
