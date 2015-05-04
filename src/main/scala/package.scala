@@ -1,5 +1,3 @@
-import language.implicitConversions
-
 import scala.collection.GenTraversableOnce
 
 package object grid extends com.github.nscala_time.time.Imports {

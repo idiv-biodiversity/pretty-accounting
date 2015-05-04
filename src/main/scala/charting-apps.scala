@@ -137,7 +137,7 @@ object SlotsPerGroup extends ChartingApp {
 
   def chart = XYAreaChart.stacked (
     title = name.localized,
-    data  = dispatched groupBy department toTimeslots { _.slots } toTimeTable
+    data  = dispatched groupBy department toTimeslots { _.slots.toDouble } toTimeTable
   )
 }
 
@@ -146,7 +146,7 @@ object SlotsPerProject extends ChartingApp {
 
   def chart = XYAreaChart.stacked (
     title = name.localized,
-    data  = dispatched groupBy project toTimeslots { _.slots } toTimeTable
+    data  = dispatched groupBy project toTimeslots { _.slots.toDouble } toTimeTable
   )
 }
 
@@ -155,7 +155,7 @@ object SlotsPerQueue extends ChartingApp {
 
   def chart = XYAreaChart.stacked (
     title = name.localized,
-    data  = dispatched groupBy { _.queue.get } toTimeslots { _.slots } toTimeTable
+    data  = dispatched groupBy { _.queue.get } toTimeslots { _.slots.toDouble } toTimeTable
   )
 }
 
@@ -173,7 +173,7 @@ object SlotsSequentialVsParallel extends ChartingApp {
 
   def chart = XYAreaChart.stacked (
     title = name.localized,
-    data  = dispatched groupBy SeqVsPar toTimeslots { _.slots } toTimeTable
+    data  = dispatched groupBy SeqVsPar toTimeslots { _.slots.toDouble } toTimeTable
   )
 }
 
@@ -231,6 +231,6 @@ object Utilization extends ChartingApp {
 
   def chart = XYAreaChart (
     title = name.localized,
-    data  = dispatched.toTimeslots(_.slots).toTimeSeriesCollection("")
+    data  = dispatched.toTimeslots(_.slots.toDouble).toTimeSeriesCollection("")
   )
 }

@@ -4,7 +4,6 @@ import language.postfixOps
 import language.implicitConversions
 
 import grid.Filtering._
-import grid.RichTime._
 import grid.TypeImports._
 
 object RichJobs extends RichJobs
@@ -96,7 +95,7 @@ trait RichJobs {
       } getOrElse(jobs)
 
       val stuff: GenIterable[Map[DateTime,(Int,Int)]] = for {
-        job ← jobs
+        job ← filtered
 
         sub = job.time.submission withSecondOfMinute 0
         sta = job.time.start      withSecondOfMinute 0

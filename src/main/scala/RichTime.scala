@@ -2,8 +2,6 @@ package grid
 
 import language.implicitConversions
 
-import scala.util.Try
-
 object RichTime extends RichTime
 
 trait RichTime {
@@ -20,22 +18,6 @@ trait RichTime {
       case q2 if ( 4 <= q2) && (q2 <=  6) ⇒ "Q2"
       case q3 if ( 7 <= q3) && (q3 <=  9) ⇒ "Q3"
       case q4 if (10 <= q4) && (q4 <= 12) ⇒ "Q4"
-    }
-  }
-
-  implicit class RichInterval(self: Interval) {
-    import org.joda.time.ReadablePeriod
-
-    def by(d: ReadablePeriod) = {
-      val coll = collection.mutable.ListBuffer[DateTime]()
-
-      var x = self.start
-      while (x < self.end) {
-        coll += x
-        x += d
-      }
-
-      coll.toList
     }
   }
 
