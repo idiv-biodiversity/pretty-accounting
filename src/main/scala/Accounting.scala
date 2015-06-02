@@ -4,7 +4,7 @@ import language.implicitConversions
 
 object Accounting extends Accounting
 trait Accounting extends Imports with Implicits with scalax.chart.module.Charting
-  with Categorizing with Filtering with Parsing with RichJobs with RichTime
+  with Categorizing with Filtering with Streaming with RichTime
 
 object Implicits extends Implicits
 trait Implicits extends FileImplicits

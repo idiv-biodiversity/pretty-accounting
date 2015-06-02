@@ -13,9 +13,9 @@ class AccountingParserSpec extends Specification { def is = s2"""
   // tests
   // -----------------------------------------------------------------------------------------------
 
-  def e1 = Parsing.AccountingEntry.unapply(sixzeroueightEntry) must beSome
-  def e2 = Parsing.AccountingEntry.unapply(sixtwoufiveEntry) must beSome
-  def e3 = Parsing.AccountingEntry.unapply(resReqContainingColon) must beSome
+  def e1 = Streaming.AccountingEntry.unapply(sixzeroueightEntry) must beSome
+  def e2 = Streaming.AccountingEntry.unapply(sixtwoufiveEntry) must beSome
+  def e3 = Streaming.AccountingEntry.unapply(resReqContainingColon) must beSome
 
   // -----------------------------------------------------------------------------------------------
   // utility functions

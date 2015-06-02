@@ -1,8 +1,9 @@
 package grid
 
-import scalaz.Scalaz._
+import scalaz.std.option._
+import scalaz.syntax.apply._
 
-object AccountingApp extends Accounting {
+object AccountingApp {
   object IntervalExtractor {
     def unapply(s: String): Option[Interval] =
       util.Try(new Interval(s)).toOption
@@ -33,6 +34,12 @@ trait AccountingApp extends App with Accounting {
     val end   = sys.props get "grid.accounting.end"   flatMap { _.toDateTimeOption }
 
     (start ⊛ end) { _ to _ }
+  }
+
+  def filtered = interval map { interval =>
+    dispatched filter isBetween(interval)
+  } getOrElse {
+    dispatched
   }
 
   def extension: String = sys.props get "grid.accounting.output.extension" getOrElse {

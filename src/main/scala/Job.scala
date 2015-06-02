@@ -134,7 +134,7 @@ object Job {
       nsignals: Long,
       nvcsw: Long,
       nivcsw: Long,
-      cputime: Double,
+      @deprecated("use with caution: grid engine reports wrong values sometimes", "0.1.0") cputime: Double,
       mem: Double,
       maxvmem: Long,
       io: Double,
@@ -194,11 +194,29 @@ case class Job (
     reservation: Option[Reservation]
   ) {
 
-  /** Returns the CPU efficiency.
+  /** Returns the efficiency.
     *
     * This value is calculated with the assumption that the job did not use more cores than
     * requested.
     */
-  def efficiency: Double = (res.cputime / slots) / res.wctime
+  def efficiency: Double = (res.utime + res.stime) / slots / res.wctime
+
+  def perMinute[A](f: Job => A): Map[DateTime,A] = {
+    val start = time.start withSecondOfMinute 0
+    val end   = time.end   withSecondOfMinute 0
+
+    val value = f(this)
+
+    start to end by 1.minute mapValue { value }
+  }
+
+  def waitPerMinute[A](f: Job => A): Map[DateTime,A] = {
+    val submission = time.submission withSecondOfMinute 0
+    val start      = time.start      withSecondOfMinute 0
+
+    val value = f(this)
+
+    submission to start by 1.minute mapValue { value }
+  }
 
 }

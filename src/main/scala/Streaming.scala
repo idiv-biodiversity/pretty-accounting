@@ -1,31 +1,35 @@
 package grid
 
-import grid.Filtering._
-import grid.TypeImports._
+import scalaz.concurrent.Task
+import scalaz.stream._
 
-object Parsing extends Parsing
+import Filtering._
 
-trait Parsing {
-  def accountingFilePath: String = sys.props get "grid.accounting.file" getOrElse {
+object Streaming extends Streaming
+
+trait Streaming {
+
+  def accountingFile: String = sys.props get "grid.accounting.file" getOrElse {
     sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
   }
 
-  def accountingFileLines: GenIterable[String] =
-    scalax.file.Path.fromString(accountingFilePath).lines().par
+  def lines: Process[Task,String] =
+    io.linesR(accountingFile)
 
-  def raw(implicit lines: GenIterable[String] = accountingFileLines) = lines collect {
-    case AccountingEntry(job) ⇒ job
-  }
+  def raw: Process[Task,Job] =
+    lines collect {
+      case AccountingEntry(job) => job
+    }
 
-  def jobs(implicit lines: GenIterable[String] = accountingFileLines) = {
+  def jobs: Process[Task,Job] = {
     val exclude = ExcludeGIDsRegex
     raw filter combined(exclude)
   }
 
-  def dispatched = jobs filter isDispatched
+  def dispatched: Process[Task,Job] =
+    jobs filter isDispatched
 
-  def linesNotMatching(implicit lines: GenIterable[String] = accountingFileLines) =
-    lines filterNot { AccountingEntry.unapply(_).isDefined }
+  // TODO make the whole job parsing stuff lazy, because usually one only needs a few columns
 
   object AccountingEntry {
     import Job._
@@ -84,4 +88,5 @@ trait Parsing {
       case _ ⇒ None
     }
   }
+
 }
