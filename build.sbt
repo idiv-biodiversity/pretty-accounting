@@ -2,16 +2,14 @@ name := "pretty-accounting"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.11.6"
-
-resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases"
+scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq (
-  "com.lowagie"              %  "itext"         % "4.2.1",
-  "com.github.wookietreiber" %% "scala-chart"   % "0.4.2",
-  "com.github.nscala-time"   %% "nscala-time"   % "2.0.0",
-  "org.scalaz.stream"        %% "scalaz-stream" % "0.7a",
-  "org.specs2"               %% "specs2-core"   % "3.6" % "test"
+  "com.itextpdf"             %  "itextpdf"      % "5.5.8",
+  "com.github.wookietreiber" %% "scala-chart"   % "0.5.0",
+  "com.github.nscala-time"   %% "nscala-time"   % "2.6.0",
+  "org.scalaz.stream"        %% "scalaz-stream" % "0.8",
+  "org.specs2"               %% "specs2-core"   % "3.7" % "test"
 )
 
 initialCommands in Compile += """
