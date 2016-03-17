@@ -134,7 +134,7 @@ object Job {
       nsignals: Long,
       nvcsw: Long,
       nivcsw: Long,
-      @deprecated("use with caution: grid engine reports wrong values sometimes", "0.1.0") cputime: Double,
+      cputime: Double,
       mem: Double,
       maxvmem: Long,
       io: Double,
