@@ -2,14 +2,14 @@ name := "pretty-accounting"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq (
-  "com.itextpdf"             %  "itextpdf"      % "5.5.8",
+  "com.itextpdf"             %  "itextpdf"      % "5.5.9",
   "com.github.wookietreiber" %% "scala-chart"   % "0.5.0",
-  "com.github.nscala-time"   %% "nscala-time"   % "2.6.0",
-  "org.scalaz.stream"        %% "scalaz-stream" % "0.8",
-  "org.specs2"               %% "specs2-core"   % "3.7" % "test"
+  "com.github.nscala-time"   %% "nscala-time"   % "2.12.0",
+  "org.scalaz.stream"        %% "scalaz-stream" % "0.8.1",
+  "org.specs2"               %% "specs2-core"   % "3.8.3" % "test"
 )
 
 initialCommands in Compile += """
