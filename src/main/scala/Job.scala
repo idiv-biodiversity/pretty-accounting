@@ -27,8 +27,13 @@ object Job {
   case class User(uid: String, gid: String)
 
   object Time {
-    def apply(s: String): Time = {
+    def seconds(s: String): Time = {
       val parts = s split ":" map { _.toLong * 1000L } map { _.toDateTime }
+      Time(submission = parts(0), start = parts(1), end = parts(2))
+    }
+
+    def milliseconds(s: String): Time = {
+      val parts = s split ":" map { _.toLong } map { _.toDateTime }
       Time(submission = parts(0), start = parts(1), end = parts(2))
     }
   }
@@ -62,7 +67,7 @@ object Job {
     def apply(s: String, cpu: String, mem: String, maxvmem: String, io: String, iow: String): ResourceUsage = {
       val parts = s split ":"
       ResourceUsage(
-        wctime    = parts(0).toLong,
+        wctime    = parts(0).toDouble.round,
         utime     = parts(1).toDouble,
         stime     = parts(2).toDouble,
         maxrss    = parts(3).toDouble,
