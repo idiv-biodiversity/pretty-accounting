@@ -67,10 +67,10 @@ object Job {
     def apply(s: String, cpu: String, mem: String, maxvmem: String, io: String, iow: String): ResourceUsage = {
       val parts = s split ":"
       ResourceUsage(
-        wctime    = parts(0).toDouble.round,
-        utime     = parts(1).toDouble,
-        stime     = parts(2).toDouble,
-        maxrss    = parts(3).toDouble,
+        wctime    = parts(0).replaceAll(",",".").toDouble.round,
+        utime     = parts(1).replaceAll(",",".").toDouble,
+        stime     = parts(2).replaceAll(",",".").toDouble,
+        maxrss    = parts(3).replaceAll(",",".").toDouble,
         ixrss     = parts(4).toLong,
 //        ismrss    = parts(5).toLong,
         idrss     = parts(6).toLong,
@@ -78,18 +78,18 @@ object Job {
         minflt    = parts(8).toLong,
         majflt    = parts(9).toLong,
         nswap     = parts(10).toLong,
-        inblock   = parts(11).toDouble.round,
+        inblock   = parts(11).replaceAll(",",".").toDouble.round,
         oublock   = parts(12).toLong,
         msgsnd    = parts(13).toLong,
         msgrcv    = parts(14).toLong,
         nsignals  = parts(15).toLong,
         nvcsw     = parts(16).toLong,
         nivcsw    = parts(17).toLong,
-        cputime   = cpu.toDouble,
-        mem       = mem.toDouble,
-        maxvmem   = maxvmem.toDouble.round,
-        io        = io.toDouble,
-        iow       = iow.toDouble
+        cputime   = cpu.replaceAll(",",".").toDouble,
+        mem       = mem.replaceAll(",",".").toDouble,
+        maxvmem   = maxvmem.replaceAll(",",".").toDouble.round,
+        io        = io.replaceAll(",",".").toDouble,
+        iow       = iow.replaceAll(",",".").toDouble
       )
     }
   }
