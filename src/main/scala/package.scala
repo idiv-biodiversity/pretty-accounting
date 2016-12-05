@@ -1,7 +1,6 @@
 import scala.collection.GenTraversableOnce
 import org.jfree.data.time.RegularTimePeriod
 import org.jfree.data.time.TimeSeries
-import org.jfree.data.time.{ Minute => JMinute }
 
 package object grid extends com.github.nscala_time.time.Imports {
 
@@ -19,7 +18,7 @@ package object grid extends com.github.nscala_time.time.Imports {
 
   implicit class RichCollectionOfTuple2s[A,B](trav: GenTraversableOnce[(A,B)]) {
     def toMinuteTimeSeries(name: Comparable[_] = "")(implicit eva: A => RegularTimePeriod, numb: Numeric[B]): TimeSeries = {
-      trav.foldLeft(new TimeSeries(name, classOf[JMinute])) { case (series,(time,value)) =>
+      trav.foldLeft(new TimeSeries(name)) { case (series,(time,value)) =>
         series.add(time, numb.toDouble(value), false)
         series
       }

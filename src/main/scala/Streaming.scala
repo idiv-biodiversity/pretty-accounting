@@ -1,7 +1,7 @@
 package grid
 
-import scalaz.concurrent.Task
-import scalaz.stream._
+import fs2._
+import java.nio.file.Paths
 
 import Filtering._
 
@@ -13,20 +13,20 @@ trait Streaming {
     sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
   }
 
-  def lines: Process[Task,String] =
-    io.linesR(accountingFile)
+  def lines: Stream[Task,String] =
+    io.file.readAll[Task](Paths.get(accountingFile), math.pow(2,20).toInt).through(text.utf8Decode).through(text.lines)
 
-  def raw: Process[Task,Job] =
+  def raw: Stream[Task,Job] =
     lines collect {
       case AccountingEntry(job) => job
     }
 
-  def jobs: Process[Task,Job] = {
+  def jobs: Stream[Task,Job] = {
     val exclude = ExcludeGIDsRegex
     raw filter combined(exclude)
   }
 
-  def dispatched: Process[Task,Job] =
+  def dispatched: Stream[Task,Job] =
     jobs filter isDispatched
 
   // TODO make the whole job parsing stuff lazy, because usually one only needs a few columns

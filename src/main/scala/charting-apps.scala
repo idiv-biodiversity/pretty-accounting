@@ -1,12 +1,13 @@
 package grid
 
-import scalax.chart.Chart
+import java.nio.file.Paths
 
-import scalaz.Monoid
-import scalaz.std.anyVal._
-import scalaz.std.list._
-import scalaz.std.map._
-import scalaz.std.tuple._
+import cats.implicits._
+
+import fs2._
+import fs2.interop.cats._
+
+import scalax.chart.Chart
 
 object ChartingApp {
   /** Returns the regex used to parse width and height. */
@@ -18,11 +19,6 @@ object ChartingApp {
     val (high,low) = kvs.partition(_._2 / sum > lowPercent)
     val others = "others".localized -> low.foldLeft(0.0)(_ + _._2)
     others :: high.sortBy(_._2)
-  }
-
-  implicit def DoubleMonoid: Monoid[Double] = new Monoid[Double] {
-    def zero = 0.0
-    def append(a: Double, b: => Double) = a + b
   }
 
   def inverseCategories[A,B,C](m: Map[A,Iterable[(B,C)]]): Map[B,Map[A,C]] = {
@@ -63,16 +59,19 @@ object CPUTimePerDepartment extends ChartingApp {
   def name = "cputime-per-department"
 
   def data = {
-    import ChartingApp.DoubleMonoid
-
     val cxs = filtered.runFoldMap {
       job => Map(job.acl.department -> (job.res.utime + job.res.stime))
-    }.run
+    }.unsafeRun
 
     ChartingApp.lowToOthers(cxs, lowPercent)
   }
 
-  def chart = PieChart(data, title = name.localized, legend = false)
+  def chart = {
+    val c = PieChart(data)
+    c.title = name.localized
+    c.subtitles.clear()
+    c
+  }
 }
 
 object CPUTimePerDepartmentPerMonth extends ChartingApp {
@@ -85,8 +84,6 @@ object CPUTimePerDepartmentPerMonth extends ChartingApp {
   }
 
   def data = {
-    import ChartingApp.DoubleMonoid
-
     val pattern = org.joda.time.format.DateTimeFormat.forPattern("MMMM YYYY")
 
     val cxs = filtered.runFoldMap { job =>
@@ -94,7 +91,7 @@ object CPUTimePerDepartmentPerMonth extends ChartingApp {
       val department = job.acl.department
       val cputime = job.res.utime + job.res.stime
       Map(month -> Map(department -> cputime))
-    }.run
+    }.unsafeRun
 
     val withOthers = cxs.mapValues(xs => ChartingApp.lowToOthers(xs, lowPercent))
 
@@ -103,7 +100,8 @@ object CPUTimePerDepartmentPerMonth extends ChartingApp {
 
   // TODO sort each pie chart by value, put others at front
   def chart = {
-    val c = MultiplePieChart(data, title = name.localized)
+    val c = MultiplePieChart(data)
+    c.title = name.localized
     c.labelGenerator = None
     c
   }
@@ -119,14 +117,12 @@ object CPUTimePerDepartmentPerQuarter extends ChartingApp {
   }
 
   def data = {
-    import ChartingApp.DoubleMonoid
-
     val cxs = filtered.runFoldMap { job =>
       val quarter = quarter_of_start(job)
       val department = job.acl.department
       val cputime = job.res.utime + job.res.stime
       Map(quarter -> Map(department -> cputime))
-    }.run
+    }.unsafeRun
 
     val withOthers = cxs.mapValues(xs => ChartingApp.lowToOthers(xs, lowPercent))
 
@@ -135,7 +131,8 @@ object CPUTimePerDepartmentPerQuarter extends ChartingApp {
 
   // TODO sort each pie chart by value, put others at front
   def chart = {
-    val c = MultiplePieChart(data, title = name.localized)
+    val c = MultiplePieChart(data)
+    c.title = name.localized
     c.labelGenerator = None
     c
   }
@@ -150,7 +147,7 @@ object DiskUsage extends ChartingApp {
     val MBRE = """([\d.]+)M""".r
     val TBRE = """([\d.]+)T""".r
 
-    val xys = scalaz.stream.io.linesR("/data/disk-usage.txt").map({ line =>
+    val xys = io.file.readAll[Task](Paths.get("/data/disk-usage.txt"), math.pow(2,20).toInt).through(text.utf8Decode).through(text.lines).map({ line =>
       val parts = line split "\t"
       val name = parts(1)
       val value = parts(0) match {
@@ -161,11 +158,16 @@ object DiskUsage extends ChartingApp {
         case TBRE(tb) ⇒ tb.toDouble * math.pow(2,40)
       }
       name -> value
-    }).runLog.run
+    }).runLog.unsafeRun
     ChartingApp.lowToOthers(xys.toMap, lowPercent)
   }
 
-  def chart = PieChart(data, title = name.localized, legend = false)
+  def chart = {
+    val c = PieChart(data)
+    c.title = name.localized
+    c.subtitles.clear()
+    c
+  }
 }
 
 object JobsPerUser extends ChartingApp {
@@ -173,13 +175,13 @@ object JobsPerUser extends ChartingApp {
 
   def data = filtered.runFoldMap {
     job => Map(job.user.uid -> 1)
-  }.run.sortBy(_._2)
+  }.unsafeRun.sortBy(_._2)
 
   def chart = {
-    val chart = BarChart(data)
-    chart.title = name.localized
-    chart.labelGenerator = CategoryLabelGenerator.Default
-    chart
+    val c = BarChart(data)
+    c.title = name.localized
+    c.labelGenerator = CategoryLabelGenerator.Default
+    c
   }
 }
 
@@ -188,12 +190,13 @@ object SlotsPerGroup extends ChartingApp {
 
   def data = filtered.runFoldMap {
     job => Map(job.acl.department -> job.perMinute(_.slots))
-  }.run
+  }.unsafeRun
 
-  def chart = XYAreaChart.stacked (
-    data.toTimeTable,
-    title = name.localized
-  )
+  def chart = {
+    val c = XYAreaChart.stacked(data.toTimeTable)
+    c.title = name.localized
+    c
+  }
 }
 
 object SlotsPerProject extends ChartingApp {
@@ -201,12 +204,13 @@ object SlotsPerProject extends ChartingApp {
 
   def data = filtered.runFoldMap {
     job => Map(job.acl.project -> job.perMinute(_.slots))
-  }.run
+  }.unsafeRun
 
-  def chart = XYAreaChart.stacked (
-    data.toTimeTable,
-    title = name.localized
-  )
+  def chart = {
+    val c = XYAreaChart.stacked(data.toTimeTable)
+    c.title = name.localized
+    c
+  }
 }
 
 object SlotsPerQueue extends ChartingApp {
@@ -214,12 +218,13 @@ object SlotsPerQueue extends ChartingApp {
 
   def data = filtered.runFoldMap {
     job => Map(job.queue.get -> job.perMinute(_.slots))
-  }.run
+  }.unsafeRun
 
-  def chart = XYAreaChart.stacked (
-    data.toTimeTable,
-    title = name.localized
-  )
+  def chart = {
+    val c = XYAreaChart.stacked(data.toTimeTable)
+    c.title = name.localized
+    c
+  }
 }
 
 object SlotsRunVsWait extends ChartingApp {
@@ -244,13 +249,14 @@ object SlotsRunVsWait extends ChartingApp {
         waiting -> job.perMinute(_.slots),
         running -> job.waitPerMinute(_.slots)
       )
-    }.run
+    }.unsafeRun
   }
 
-  def chart = XYAreaChart.stacked (
-    data.toTimeTable,
-    title = name.localized
-  )
+  def chart = {
+    val c = XYAreaChart.stacked(data.toTimeTable)
+    c.title = name.localized
+    c
+  }
 }
 
 object SlotsSequentialVsParallel extends ChartingApp {
@@ -258,12 +264,13 @@ object SlotsSequentialVsParallel extends ChartingApp {
 
   def data = filtered.runFoldMap {
     job => Map(SeqVsPar(job) -> job.perMinute(_.slots))
-  }.run
+  }.unsafeRun
 
-  def chart = XYAreaChart.stacked (
-    data.toTimeTable,
-    title = name.localized
-  )
+  def chart = {
+    val c = XYAreaChart.stacked(data.toTimeTable)
+    c.title = name.localized
+    c
+  }
 }
 
 object ParallelUsage extends ChartingApp {
@@ -275,7 +282,7 @@ object ParallelUsage extends ChartingApp {
         case par if par.parallelEnvironment.isDefined => (par.slots, 0)
         case seq                                      => (0        , 1)
       }
-    }.run
+    }.unsafeRun
 
     val b: Map[DateTime,Double] = a mapValues {
       case (par,seq) => par.toDouble / ( par + seq )
@@ -286,7 +293,11 @@ object ParallelUsage extends ChartingApp {
     b.toMinuteTimeSeries(name.localized)
   }
 
-  def chart = XYLineChart(data, title = name.localized)
+  def chart = {
+    val c = XYLineChart(data)
+    c.title = name.localized
+    c
+  }
 }
 
 // originally: jobs per hour
@@ -313,7 +324,7 @@ object TurnaroundTime extends ChartingApp {
     val waitpercent = job.time.waiting.millis.toDouble / job.time.turnaround.millis
 
     Map(month -> List(waitpercent))
-  }.run
+  }.unsafeRun
 
   def chart = {
     val chart = XYBoxAndWhiskerChart(data.toBoxAndWhiskerXYDataset())
@@ -329,12 +340,13 @@ object Utilization extends ChartingApp {
 
   def data = filtered.runFoldMap { job =>
     job perMinute { _.slots }
-  }.run
+  }.unsafeRun
 
-  def chart = XYAreaChart (
+  def chart = {
     // TODO buggy internal TimeSeries time class handling
     // b.toTimeSeriesCollection(name.localized)
-    data.toMinuteTimeSeries(name.localized),
-    title = name.localized
-  )
+    val c = XYAreaChart(data.toMinuteTimeSeries(name.localized))
+    c.title = name.localized
+    c
+  }
 }

@@ -1,7 +1,9 @@
 package grid
 
-import scalaz.Monoid
-import scalaz.std.map._
+import cats._
+import cats.implicits._
+
+import fs2.interop.cats._
 
 trait EfficiencyApp extends AccountingApp {
   def defaultExtension = "txt"
@@ -17,8 +19,8 @@ trait EfficiencyApp extends AccountingApp {
     }
 
     implicit val ADTMonoid: Monoid[ADT] = new Monoid[ADT] {
-      val zero = ADT(0, 0, 0.0)
-      def append(a: ADT, b: => ADT): ADT = a + b
+      val empty = ADT(0, 0, 0.0)
+      def combine(a: ADT, b: ADT): ADT = a + b
     }
   }
 
@@ -37,7 +39,7 @@ object EfficiencyByUser extends EfficiencyApp {
 
   filtered.runFoldMap {
     job => Map(job.user.uid -> ADT(job))
-  }.run foreach {
+  }.unsafeRun foreach {
     x => println(formatted(x))
   }
 }
@@ -47,7 +49,7 @@ object EfficiencyByGroup extends EfficiencyApp {
 
   filtered.runFoldMap {
     job => Map(job.user.gid -> ADT(job))
-  }.run foreach {
+  }.unsafeRun foreach {
     x => println(formatted(x))
   }
 }
@@ -58,7 +60,7 @@ object EfficiencyByJob extends EfficiencyApp {
   filtered.map({ job =>
     val eff = (((job.res.cputime) / job.slots / job.res.wctime) * 10000).round / 100.0
     (job.slots,job.res.utime,job.res.stime,job.res.cputime,job.res.wctime,eff)
-  }).runLog.run.sortBy(_._6) foreach { x =>
+  }).runLog.unsafeRun.sortBy(_._6) foreach { x =>
     val (slots,utime,stime,cputime,wctime,eff) = x
     println(f"""$slots%10d slots   $utime%12.2f u   $stime%12.2f s   $cputime%12.2f cpu   $wctime%10d wc   $eff%6.2f eff""")
   }
