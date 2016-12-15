@@ -2,7 +2,9 @@ name := "pretty-accounting"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.12.1"
+
+crossScalaVersions := Seq("2.11.8", "2.12.1")
 
 libraryDependencies ++= Seq (
   "com.itextpdf"             %  "itextpdf"      % "5.5.10",
