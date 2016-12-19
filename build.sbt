@@ -34,3 +34,5 @@ initialCommands in Compile in console += """
   import grid._
   import grid.Accounting._
 """
+
+fork in run := true
