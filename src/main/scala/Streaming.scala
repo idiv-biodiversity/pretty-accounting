@@ -1,7 +1,7 @@
 package grid
 
 import fs2._
-import java.nio.file.Paths
+import java.nio.file._
 
 import Filtering._
 
@@ -9,12 +9,20 @@ object Streaming extends Streaming
 
 trait Streaming {
 
+  // TODO throw out of this API and move to app config
   def accountingFile: String = sys.props get "grid.accounting.file" getOrElse {
     sys.env.getOrElse("SGE_ROOT", "/usr/local/sge") + "/default/common/accounting"
   }
 
+  // TODO remove chunk size magic number / make customizable in app
+  def lines(path: Path): Stream[Task,String] = {
+    io.file.readAll[Task](path, chunkSize = math.pow(2,20).toInt)
+      .through(text.utf8Decode)
+      .through(text.lines)
+  }
+
   def lines: Stream[Task,String] =
-    io.file.readAll[Task](Paths.get(accountingFile), math.pow(2,20).toInt).through(text.utf8Decode).through(text.lines)
+    lines(Paths.get(accountingFile))
 
   def raw: Stream[Task,Job] =
     lines collect {
