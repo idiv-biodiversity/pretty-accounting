@@ -147,7 +147,12 @@ object DiskUsage extends ChartingApp {
     val MBRE = """([\d.]+)M""".r
     val TBRE = """([\d.]+)T""".r
 
-    val xys = io.file.readAll[Task](Paths.get("/data/disk-usage.txt"), math.pow(2,20).toInt).through(text.utf8Decode).through(text.lines).map({ line =>
+    // TODO remove chunk size magic number / make customizable in app
+    val bytes = io.file.readAll[Task](Paths.get("/data/disk-usage.txt"), chunkSize = math.pow(2,20).toInt)
+
+    val lines = bytes.through(text.utf8Decode).through(text.lines)
+
+    val xys = lines.map({ line =>
       val parts = line split "\t"
       val name = parts(1)
       val value = parts(0) match {
@@ -159,6 +164,7 @@ object DiskUsage extends ChartingApp {
       }
       name -> value
     }).runLog.unsafeRun
+
     ChartingApp.lowToOthers(xys.toMap, lowPercent)
   }
 
