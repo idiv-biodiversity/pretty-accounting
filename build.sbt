@@ -1,10 +1,15 @@
-name := "pretty-accounting"
+enablePlugins(BuildInfoPlugin)
+enablePlugins(GitVersioning)
 
-version := "0.1.0-SNAPSHOT"
+name := "pretty-accounting"
 
 scalaVersion := "2.12.1"
 
 crossScalaVersions := Seq("2.11.8", "2.12.1")
+
+buildInfoKeys := Seq[BuildInfoKey](name, version)
+
+buildInfoPackage := "grid"
 
 libraryDependencies ++= Seq (
   "com.itextpdf"             %  "itextpdf"      % "5.5.10",
@@ -13,6 +18,7 @@ libraryDependencies ++= Seq (
   "co.fs2"                   %% "fs2-core"      % "0.9.2",
   "co.fs2"                   %% "fs2-io"        % "0.9.2",
   "co.fs2"                   %% "fs2-cats"      % "0.2.0",
+  "com.github.scopt"         %% "scopt"         % "3.5.0",
   "org.specs2"               %% "specs2-core"   % "3.8.6" % "test"
 )
 
