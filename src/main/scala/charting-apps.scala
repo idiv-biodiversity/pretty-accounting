@@ -3,10 +3,8 @@ package grid
 import java.nio.file.Paths
 
 import cats.implicits._
-
 import fs2._
 import fs2.interop.cats._
-
 import scalax.chart.Chart
 
 object ChartingApp {
@@ -199,6 +197,7 @@ object SlotsPerGroup extends ChartingApp {
   }.unsafeRun
 
   def chart = {
+    import TimeConverter.jodaToJFreeMinute
     val c = XYAreaChart.stacked(data.toTimeTable)
     c.title = name.localized
     c
@@ -213,6 +212,7 @@ object SlotsPerProject extends ChartingApp {
   }.unsafeRun
 
   def chart = {
+    import TimeConverter.jodaToJFreeMinute
     val c = XYAreaChart.stacked(data.toTimeTable)
     c.title = name.localized
     c
@@ -227,6 +227,7 @@ object SlotsPerQueue extends ChartingApp {
   }.unsafeRun
 
   def chart = {
+    import TimeConverter.jodaToJFreeMinute
     val c = XYAreaChart.stacked(data.toTimeTable)
     c.title = name.localized
     c
@@ -259,6 +260,7 @@ object SlotsRunVsWait extends ChartingApp {
   }
 
   def chart = {
+    import TimeConverter.jodaToJFreeMinute
     val c = XYAreaChart.stacked(data.toTimeTable)
     c.title = name.localized
     c
@@ -273,6 +275,7 @@ object SlotsSequentialVsParallel extends ChartingApp {
   }.unsafeRun
 
   def chart = {
+    import TimeConverter.jodaToJFreeMinute
     val c = XYAreaChart.stacked(data.toTimeTable)
     c.title = name.localized
     c
@@ -283,6 +286,8 @@ object ParallelUsage extends ChartingApp {
   def name = "parallel-usage"
 
   def data = {
+    import TimeConverter.jodaToJFreeMinute
+
     val a: Map[DateTime,(Int,Int)] = filtered.runFoldMap { job =>
       job perMinute {
         case par if par.parallelEnvironment.isDefined => (par.slots, 0)
@@ -349,6 +354,7 @@ object Utilization extends ChartingApp {
   }.unsafeRun
 
   def chart = {
+    import TimeConverter.jodaToJFreeMinute
     // TODO buggy internal TimeSeries time class handling
     // b.toTimeSeriesCollection(name.localized)
     val c = XYAreaChart(data.toMinuteTimeSeries(name.localized))

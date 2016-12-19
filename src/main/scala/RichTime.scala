@@ -2,6 +2,8 @@ package grid
 
 import language.implicitConversions
 
+import org.jfree.data.time.{Day => JDay, Minute => JMinute, Month => JMonth, SimpleTimePeriod}
+
 object RichTime extends RichTime
 
 trait RichTime {
@@ -25,17 +27,18 @@ trait RichTime {
   // joda to jfreechart conversions
   // -----------------------------------------------------------------------------------------------
 
-  import org.jfree.data.time.{
-    Minute ⇒ JMinute,
-    Day ⇒ JDay,
-    SimpleTimePeriod
+  object TimeConverter {
+    implicit def jodaToJFreeMinute(d: DateTime): JMinute =
+      new JMinute(d.toDate)
+
+    implicit def jodaToJFreeMonth(d: LocalDate): JMonth =
+      new JMonth(d.toDateTimeAtStartOfDay.toDate)
+
+    implicit def jodaToJFreeDay(d: LocalDate): JDay =
+      new JDay(d.toDateTimeAtStartOfDay.toDate)
+
+    implicit def jodaToJFreeTimePeriod(i: Interval): SimpleTimePeriod =
+      new SimpleTimePeriod(i.start.toDate, i.end.toDate)
   }
-
-  implicit def joda2jfreeminute(d: DateTime): JMinute = new JMinute(d.toDate)
-
-  implicit def joda2jfreeday(d: LocalDate): JDay = new JDay(d.toDateTimeAtStartOfDay.toDate)
-
-  implicit def interval2timeperiod(i: Interval): SimpleTimePeriod =
-    new SimpleTimePeriod(i.start.toDate, i.end.toDate)
 
 }
