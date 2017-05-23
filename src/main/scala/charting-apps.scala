@@ -76,7 +76,7 @@ object `cputime-per-department-per-month` extends ChartingApp {
   def name = "cputime-per-department"
 
   override def filtered = interval map { interval ⇒
-    dispatched filter startedBetween(interval)
+    dispatched filter (started between interval)
   } getOrElse {
     dispatched
   }
@@ -109,7 +109,7 @@ object `cputime-per-department-per-quarter` extends ChartingApp {
   def name = "cputime-per-department"
 
   override def filtered = interval map { interval ⇒
-    dispatched filter startedBetween(interval)
+    dispatched filter (started between interval)
   } getOrElse {
     dispatched
   }
@@ -325,7 +325,7 @@ object `turnaroundtime` extends ChartingApp {
   def name = "turnaround-time"
 
   override def filtered = interval map { interval ⇒
-    dispatched filter submittedBetween(interval)
+    dispatched filter (submitted between interval)
   } getOrElse {
     dispatched
   }
