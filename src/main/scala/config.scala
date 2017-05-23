@@ -7,6 +7,7 @@ import cats.implicits._
 case class Config(accountingFiles: Seq[Path] = Nil,
                   start: Option[LocalDate] = None,
                   end: Option[LocalDate] = None,
+                  verbose: Boolean = false,
                   threads: Int = 1) {
 
   /** Optionally returns the interval from start to end. */
@@ -50,6 +51,10 @@ object Config {
       .valueName("2017-01-01")
       .action((x, c) => c.copy(end = Some(x)))
       .text("jobs started before this date")
+
+    opt[Unit]('v', "verbose")
+      .action((_, c) => c.copy(verbose = true))
+      .text("prints some status updates along the way")
 
     opt[Int]("threads")
       .valueName(sys.runtime.availableProcessors.toString)
