@@ -10,3 +10,4 @@ Systems (RJMS) aka Distributed Resource Management Systems (DRMS).
     -   Version 6.2 Update 5
 -   Univa Grid Engine
     -   Version 8.3
+    -   Version 8.4

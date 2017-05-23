@@ -10,6 +10,7 @@ class AccountingParserSpec extends Specification { def is = s2"""
     SGE 6.0u8                                                                             $e1
     SGE 6.2u5                                                                             $e2
     UGE 8.3                                                                               $e3
+    UGE 8.4                                                                               $e4
 
   parser should handle weird corner cases
     resource request contains colon                                                       $ec1
@@ -24,7 +25,8 @@ class AccountingParserSpec extends Specification { def is = s2"""
 
   def e1 = Streaming.AccountingEntry.unapply(sixzeroueightEntry) must beSome
   def e2 = Streaming.AccountingEntry.unapply(sixtwoufiveEntry) must beSome
-  def e3 = Streaming.AccountingEntry.unapply(ugeeight) must beSome
+  def e3 = Streaming.AccountingEntry.unapply(uge83) must beSome
+  def e4 = Streaming.AccountingEntry.unapply(uge84) must beSome
 
   def ec1 = Streaming.AccountingEntry.unapply(resReqContainingColon) must beSome
 
@@ -39,7 +41,9 @@ class AccountingParserSpec extends Specification { def is = s2"""
 
   def sixtwoufiveEntry = """batch:node037:group:user:G03|OptFreqB3LYP6311Gdp_PCM_UA0_water_Y:142674:sge:0:1331104765:1331104765:1331124668:100:137:19903:0.008998:0.015997:0.000000:0:0:0:0:4055:0:0:0.000000:0:0:0:0:100:32:group:group:NONE:1:0:19882.720000:61564.294411:51.781509:-l h_rt=864000,highmem=0:0.000000:NONE:3468050432.000000:0:0"""
 
-  def ugeeight = """ideve_120:node164:group:user:BMO2:870542:sge:10:1452177896152:1453100011880:1453100075983:100:137:64.103:0.014:0.009:5268:0:0:0:0:7755:0:0:0:0:0:0:0:140:15:project:idiv_muellnerriehl:smp:5:0:86.780:689.914110:0.076263:-U idiv_muellnerriehl -u user -l h_rt=2592000,h_vmem=8G,highmem=false -pe smp 1-10 -binding no_job_binding 0 0 0 0 no_explicit_binding:0.000000:NONE:8637100032:0:0:NONE:root@head1:0:0:idiv1.eve.ufz.de:NONE:qsub -pe smp -10 -N BMO2 beast182.sh MarcOut_2.xml:64.108000"""
+  def uge83 = """ideve_120:node164:group:user:BMO2:870542:sge:10:1452177896152:1453100011880:1453100075983:100:137:64.103:0.014:0.009:5268:0:0:0:0:7755:0:0:0:0:0:0:0:140:15:project:idiv_muellnerriehl:smp:5:0:86.780:689.914110:0.076263:-U idiv_muellnerriehl -u user -l h_rt=2592000,h_vmem=8G,highmem=false -pe smp 1-10 -binding no_job_binding 0 0 0 0 no_explicit_binding:0.000000:NONE:8637100032:0:0:NONE:root@head1:0:0:idiv1.eve.ufz.de:NONE:qsub -pe smp -10 -N BMO2 beast182.sh MarcOut_2.xml:64.108000"""
+
+  def uge84 = """all.q:node104:group:user:jsv-test:26:sge:0:1487593940295:1487593940560:1487593941592:0:0:1.032:0.009:0.001:6156:0:0:0:0:3726:0:0:0:0:0:0:0:56:20:project:department:NONE:1:0:0.010:0.000000:0.000000:-U idiv_gsu -u krausec -l h_rt=900,h_vmem=1G,highmem=false,r_gpu=false -binding linear_automatic 1 0 0 0 NULL:0.000000:NONE:0:0:0:NONE:NONE:0:0:idiv1.eve.ufz.de:NONE:qsub -N jsv-test -l h_rt=900,h_vmem=1G -binding linearÿ1 -b y /bin/sleep 1:1.235000:0"""
 
   def resReqContainingColon = """queue02:node072:group:user:jobname:10245:sge:0:1303311181:1303311191:1303311491:0:0:300:0.002999:0.001999:0.000000:0:0:0:0:934:0:0:0.000000:0:0:0:0:49:9:group:group:NONE:1:0:0.004998:0.000000:0.000027:-l cpu=24:00:00:0.000000:NONE:12754944.000000:0:0"""
 
