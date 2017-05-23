@@ -41,7 +41,7 @@ object Config {
 
     opt[LocalDate]('e', "end")
       .valueName("2017-01-01")
-      .action((x, c) => c.copy(start = Some(x)))
+      .action((x, c) => c.copy(end = Some(x)))
       .text("jobs started before this date")
 
     opt[Int]("threads")
