@@ -2,10 +2,17 @@ package grid
 
 import java.nio.file.{Path, Paths}
 
+import cats.implicits._
+
 case class Config(accountingFiles: Seq[Path] = Nil,
                   start: Option[LocalDate] = None,
                   end: Option[LocalDate] = None,
                   threads: Int = 1) {
+
+  /** Optionally returns the interval from start to end. */
+  def interval: Option[Interval] = (start |@| end) map {
+    _.toDateTimeAtStartOfDay to _.toDateTimeAtStartOfDay
+  }
 
   /** Returns true if the job has been started between the start and end dates.
     *
