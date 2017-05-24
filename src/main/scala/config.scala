@@ -5,16 +5,15 @@ import java.nio.file.{Path, Paths}
 import cats.implicits._
 
 case class Config(accountingFiles: Seq[Path] = Nil,
-                  start: Option[LocalDate] = None,
-                  end: Option[LocalDate] = None,
+                  start: Option[DateTime] = None,
+                  end: Option[DateTime] = None,
                   progress: Boolean = false,
                   verbose: Boolean = false,
                   threads: Int = 1) {
 
   /** Optionally returns the interval from start to end. */
-  def interval: Option[Interval] = (start |@| end) map {
-    _.toDateTimeAtStartOfDay to _.toDateTimeAtStartOfDay
-  }
+  def interval: Option[Interval] =
+    (start |@| end) map { _ to _ }
 
   /** Returns true if the job has been started between the start and end dates.
     *
@@ -22,8 +21,8 @@ case class Config(accountingFiles: Seq[Path] = Nil,
     * of the universe is assumed.
     */
   def startedBetween(job: Job): Boolean =
-    start.fold(true)(job.time.start.toLocalDate >= _) &&
-      end.fold(true)(job.time.start.toLocalDate < _)
+    start.fold(true)(job.time.start >= _) &&
+      end.fold(true)(job.time.start < _)
 
 }
 
@@ -31,8 +30,8 @@ object Config {
   implicit val pathRead: scopt.Read[Path] =
     scopt.Read.reads(Paths.get(_))
 
-  implicit val dateRead: scopt.Read[LocalDate] =
-    scopt.Read.reads(_.toLocalDate)
+  implicit val dateRead: scopt.Read[DateTime] =
+    scopt.Read.reads(_.toDateTime)
 
   def parser(name: String) = new scopt.OptionParser[Config](name) {
     head(name, BuildInfo.version)
@@ -43,12 +42,12 @@ object Config {
       .action((x, c) => c.copy(accountingFiles = x))
       .text("accounting files to include")
 
-    opt[LocalDate]('s', "start")
+    opt[DateTime]('s', "start")
       .valueName("2016-01-01")
       .action((x, c) => c.copy(start = Some(x)))
       .text("jobs started at this date")
 
-    opt[LocalDate]('e', "end")
+    opt[DateTime]('e', "end")
       .valueName("2017-01-01")
       .action((x, c) => c.copy(end = Some(x)))
       .text("jobs started before this date")
