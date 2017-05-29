@@ -1,0 +1,13 @@
+<scalastyle>
+
+  <name>Pretty Accounting - Scala Style Specification</name>
+
+  <!-- low-level whitespace style -->
+
+  <check level="error" class="org.scalastyle.file.FileTabChecker" enabled="true"></check>
+
+  <check level="error" class="org.scalastyle.file.WhitespaceEndOfLineChecker" enabled="true"></check>
+
+  <check level="error" class="org.scalastyle.file.NewLineAtEofChecker" enabled="true"></check>
+
+</scalastyle>

@@ -42,3 +42,11 @@ initialCommands in Compile in console += """
 """
 
 fork in run := true
+
+scalastyleConfig := file(".scalastyle-config.xml")
+
+lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
+
+compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value
+
+(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value

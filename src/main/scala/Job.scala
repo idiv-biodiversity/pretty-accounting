@@ -101,7 +101,7 @@ object Job {
     * @param  stime       system time
     * @param  maxrss      maximum resident set size
     * @param  ixrss       integral shared memory size
-    * @param  ismrss      
+    * @param  ismrss
     * @param  idrss       integral unshared data size
     * @param  isrss       integral unshared stack size
     * @param  minflt      page reclaims
