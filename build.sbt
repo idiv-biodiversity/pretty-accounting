@@ -43,6 +43,10 @@ initialCommands in Compile in console += """
 
 fork in run := true
 
+// -------------------------------------------------------------------------------------------------
+// scalastyle integration
+// -------------------------------------------------------------------------------------------------
+
 scalastyleConfig := file(".scalastyle-config.xml")
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
@@ -50,3 +54,62 @@ lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value
 
 (compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
+
+// -------------------------------------------------------------------------------------------------
+// scripts / install
+// -------------------------------------------------------------------------------------------------
+
+val prefix = settingKey[String]("Installation prefix.")
+
+val scriptsDir = settingKey[File]("Target path to scripts.")
+
+val scripts = taskKey[Unit]("Creates the scripts.")
+
+val install = taskKey[Unit]("Install to prefix.")
+
+prefix := sys.env.getOrElse("PREFIX", "/usr/local")
+
+scriptsDir := target.value / "scripts"
+
+scripts := {
+  val dir = scriptsDir.value
+  if (!dir.exists) dir.mkdir()
+
+  val p = prefix.value
+  val n = name.value
+
+  def script(clazz: String) =
+    s"""|#!/bin/sh
+        |java -cp "${p}/share/${n}/${n}.jar" '$clazz' "$$@"
+        |""".stripMargin
+
+  (discoveredMainClasses in Compile).value foreach { clazz =>
+    val app = clazz.drop(clazz.lastIndexOf(".") + 1).replaceAll("\\$minus", "-")
+    val s = dir / app
+    IO.write(s, script(clazz))
+    s.setExecutable(true)
+  }
+}
+
+scripts := (scripts dependsOn assembly).value
+
+install := {
+  import java.nio.file.{Files, StandardCopyOption}
+
+  val s = (scriptsDir.value * "*").get
+  val j = assembly.value
+  val p = file(prefix.value)
+
+  val bindir = p / "bin"
+  if (!bindir.exists) bindir.mkdirs()
+
+  for (i <- s) {
+    val source = i.toPath
+    val target = (bindir / s"""pa-${i.name}""").toPath
+    Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING)
+  }
+
+  IO.copy(Seq(j -> p / "share" / name.value / (name.value + ".jar")), overwrite = true)
+}
+
+install := (install dependsOn scripts).value

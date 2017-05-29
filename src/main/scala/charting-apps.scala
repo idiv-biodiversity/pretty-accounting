@@ -53,7 +53,7 @@ trait ChartingApp extends AccountingApp {
   }
 }
 
-object CPUTimePerDepartment extends ChartingApp {
+object `cputime-per-department` extends ChartingApp {
   def name = "cputime-per-department"
 
   def data = {
@@ -72,7 +72,7 @@ object CPUTimePerDepartment extends ChartingApp {
   }
 }
 
-object CPUTimePerDepartmentPerMonth extends ChartingApp {
+object `cputime-per-department-per-month` extends ChartingApp {
   def name = "cputime-per-department"
 
   override def filtered = interval map { interval ⇒
@@ -105,7 +105,7 @@ object CPUTimePerDepartmentPerMonth extends ChartingApp {
   }
 }
 
-object CPUTimePerDepartmentPerQuarter extends ChartingApp {
+object `cputime-per-department-per-quarter` extends ChartingApp {
   def name = "cputime-per-department"
 
   override def filtered = interval map { interval ⇒
@@ -136,7 +136,7 @@ object CPUTimePerDepartmentPerQuarter extends ChartingApp {
   }
 }
 
-object DiskUsage extends ChartingApp {
+object `disk-usage` extends ChartingApp {
   def name = "disk-usage-data"
 
   def data = {
@@ -174,7 +174,7 @@ object DiskUsage extends ChartingApp {
   }
 }
 
-object JobsPerUser extends ChartingApp {
+object `jobs-per-user` extends ChartingApp {
   def name = "jobs-per-user"
 
   def data = filtered.runFoldMap {
@@ -189,7 +189,7 @@ object JobsPerUser extends ChartingApp {
   }
 }
 
-object SlotsPerGroup extends ChartingApp {
+object `slots-per-group` extends ChartingApp {
   def name = "slots-per-group"
 
   def data = filtered.runFoldMap {
@@ -204,7 +204,7 @@ object SlotsPerGroup extends ChartingApp {
   }
 }
 
-object SlotsPerProject extends ChartingApp {
+object `slots-per-project` extends ChartingApp {
   def name = "slots-per-project"
 
   def data = filtered.runFoldMap {
@@ -219,7 +219,7 @@ object SlotsPerProject extends ChartingApp {
   }
 }
 
-object SlotsPerQueue extends ChartingApp {
+object `slots-per-queue` extends ChartingApp {
   def name = "slots-per-queue"
 
   def data = filtered.runFoldMap {
@@ -234,7 +234,7 @@ object SlotsPerQueue extends ChartingApp {
   }
 }
 
-object SlotsRunVsWait extends ChartingApp {
+object `slots-run-vs-wait` extends ChartingApp {
   def name = "slots-run-vs-wait"
 
   override def filtered = {
@@ -267,7 +267,7 @@ object SlotsRunVsWait extends ChartingApp {
   }
 }
 
-object SlotsSequentialVsParallel extends ChartingApp {
+object `slots-sequential-vs-parallel` extends ChartingApp {
   def name = "slots-seq-vs-par"
 
   def data = filtered.runFoldMap {
@@ -282,7 +282,7 @@ object SlotsSequentialVsParallel extends ChartingApp {
   }
 }
 
-object ParallelUsage extends ChartingApp {
+object `parallel-usage` extends ChartingApp {
   def name = "parallel-usage"
 
   def data = {
@@ -319,7 +319,7 @@ object Throughput extends ChartingApp {
 }
 */
 
-object TurnaroundTime extends ChartingApp {
+object `turnaroundtime` extends ChartingApp {
   implicit val numeric: Numeric[Double] = scala.math.Numeric.DoubleAsIfIntegral
 
   def name = "turnaround-time"
@@ -346,7 +346,7 @@ object TurnaroundTime extends ChartingApp {
   }
 }
 
-object Utilization extends ChartingApp {
+object `utilization` extends ChartingApp {
   def name = "utilization"
 
   def data = filtered.runFoldMap { job =>

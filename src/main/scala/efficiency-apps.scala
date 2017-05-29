@@ -34,7 +34,7 @@ trait EfficiencyApp extends AccountingApp {
   }
 }
 
-object EfficiencyByUser extends EfficiencyApp {
+object `efficiency-per-user` extends EfficiencyApp {
   def name = "efficiency-by-user"
 
   filtered.runFoldMap {
@@ -44,7 +44,7 @@ object EfficiencyByUser extends EfficiencyApp {
   }
 }
 
-object EfficiencyByGroup extends EfficiencyApp {
+object `efficiency-per-group` extends EfficiencyApp {
   def name = "efficiency-by-group"
 
   filtered.runFoldMap {
@@ -54,7 +54,7 @@ object EfficiencyByGroup extends EfficiencyApp {
   }
 }
 
-object EfficiencyByJob extends EfficiencyApp {
+object `efficiency-per-job` extends EfficiencyApp {
   def name = "efficiency-by-job"
 
   filtered.map({ job =>
