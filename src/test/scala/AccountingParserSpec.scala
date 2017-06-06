@@ -1,14 +1,15 @@
 package grid
 
 import org.specs2._
+import fs2.Stream
 
-class AccountingParserSpec extends Specification { def is = s2"""
+class AccountingParserSpec extends Specification with Parsing { def is = s2"""
 
   Accounting Entry Parser Specification
 
   parser should succeed for supported grid engine versions
-    SGE 6.0u8                                                                             $e1
-    SGE 6.2u5                                                                             $e2
+    SGE 6.0                                                                               $e1
+    SGE 6.2                                                                               $e2
     UGE 8.3                                                                               $e3
     UGE 8.4                                                                               $e4
 
@@ -23,15 +24,21 @@ class AccountingParserSpec extends Specification { def is = s2"""
   // tests
   // -----------------------------------------------------------------------------------------------
 
-  def e1 = Streaming.AccountingEntry.unapply(sixzeroueightEntry) must beSome
-  def e2 = Streaming.AccountingEntry.unapply(sixtwoufiveEntry) must beSome
-  def e3 = Streaming.AccountingEntry.unapply(uge83) must beSome
-  def e4 = Streaming.AccountingEntry.unapply(uge84) must beSome
+  def e(p: Parser, line: String): Vector[Job] =
+    p.parse(Stream(line)).runLog.unsafeRun
 
-  def ec1 = Streaming.AccountingEntry.unapply(resReqContainingColon) must beSome
+  def eyes(p: Parser, line: String) =
+    e(p, line) must not be empty
 
-  def b1 = Streaming.AccountingEntry.unapply(broken1) must beSome
-  def b2 = Streaming.AccountingEntry.unapply(broken2) must beSome
+  def e1 = eyes(Parser.sge60, sixzeroueightEntry)
+  def e2 = eyes(Parser.sge62, sixtwoufiveEntry)
+  def e3 = eyes(Parser.uge83, uge83)
+  def e4 = eyes(Parser.uge84, uge84)
+
+  def ec1 = eyes(Parser.sge62, resReqContainingColon)
+
+  def b1 = eyes(Parser.uge83, broken1)
+  def b2 = eyes(Parser.uge83, broken2)
 
   // -----------------------------------------------------------------------------------------------
   // utility functions
