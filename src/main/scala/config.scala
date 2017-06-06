@@ -7,6 +7,7 @@ import cats.implicits._
 case class Config(accountingFiles: Seq[Path] = Nil,
                   start: Option[LocalDate] = None,
                   end: Option[LocalDate] = None,
+                  progress: Boolean = false,
                   verbose: Boolean = false,
                   threads: Int = 1) {
 
@@ -52,9 +53,13 @@ object Config {
       .action((x, c) => c.copy(end = Some(x)))
       .text("jobs started before this date")
 
+    opt[Unit]("progress")
+      .action((_, c) => c.copy(progress = true))
+      .text("prints some status updates along the way")
+
     opt[Unit]('v', "verbose")
       .action((_, c) => c.copy(verbose = true))
-      .text("prints some status updates along the way")
+      .text("prints what is going on under the hood")
 
     opt[Int]("threads")
       .valueName(sys.runtime.availableProcessors.toString)
