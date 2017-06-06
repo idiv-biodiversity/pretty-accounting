@@ -161,4 +161,10 @@ trait Filtering {
   val combined: Regex ⇒ Job ⇒ Boolean = (exclude: Regex) ⇒ (j: Job) ⇒
     gids(exclude)(j) && realJob(j)
 
+  /** Returns a function that returns true for all jobs.
+    *
+    * @group filter-misc
+    */
+  val allJobs: Job ⇒ Boolean = (_: Job) ⇒ true
+
 }
