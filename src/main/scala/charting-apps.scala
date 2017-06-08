@@ -291,7 +291,7 @@ object `parallel-usage` extends ChartingApp {
     val a: Map[DateTime,(Int,Int)] = filtered.runFoldMap { job =>
       job perMinute {
         case par if par.parallelEnvironment.isDefined => (par.slots, 0)
-        case seq                                      => (0        , 1)
+        case _                                        => (0        , 1)
       }
     }.unsafeRun
 
