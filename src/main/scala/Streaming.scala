@@ -28,7 +28,7 @@ trait Streaming extends Parsing {
     Parser(path) match {
       case Some(parser) =>
         // TODO if (verbose) println(s"[XXX] $path $parser")
-        parser.parse(lines(path))
+        parser.parse(lines(path).filter(line => !line.startsWith("#") && line.trim.nonEmpty))
 
       case None =>
         // TODO print something about no parser being found

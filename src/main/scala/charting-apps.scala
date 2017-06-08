@@ -208,7 +208,7 @@ object `slots-per-project` extends ChartingApp {
   def name = "slots-per-project"
 
   def data = filtered.runFoldMap {
-    job => Map(job.acl.project -> job.perMinute(_.slots))
+    job => Map(job.acl.project.getOrElse("NONE") -> job.perMinute(_.slots)) // TODO localize NONE
   }.unsafeRun
 
   def chart = {
