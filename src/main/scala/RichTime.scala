@@ -2,7 +2,10 @@ package grid
 
 import language.implicitConversions
 
-import org.jfree.data.time.{Day => JDay, Minute => JMinute, Month => JMonth, SimpleTimePeriod}
+import org.jfree.data.time.{Day => JDay}
+import org.jfree.data.time.{Minute => JMinute}
+import org.jfree.data.time.{Month => JMonth}
+import org.jfree.data.time.SimpleTimePeriod
 
 object RichTime extends RichTime
 
