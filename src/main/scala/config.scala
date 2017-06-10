@@ -1,9 +1,9 @@
 package grid
 
-import java.nio.file.{Path, Paths}
-
 import cats.implicits._
 import enumeratum._
+import fs2.Strategy
+import java.nio.file.{Path, Paths}
 
 sealed abstract class Category extends EnumEntry
 object Category extends Enum[Category] {
@@ -37,6 +37,31 @@ case class Config(accountingFiles: Seq[Path] = Nil,
     start.fold(true)(job.time.start >= _) &&
       end.fold(true)(job.time.start < _)
 
+  /** Returns the amount of threads and the strategy for parallel execution.
+    *
+    * The amount of threads used will be downgraded if there are fewer files than threads specified
+    * via the `--threads` option. If this happens and the `--verbose` flag is set, there will be a
+    * note about it on STDERR.
+    *
+    * {{{
+    * val (threads, strategy) = conf.strategy
+    * implicit val S = strategy
+    * // ...
+    * val stream = fs2.concurrent.join(maxOpen = threads)(streams)
+    * }}}
+    */
+  def strategy: (Int, Strategy) = {
+    // no more than `files.size` threads needed
+    val t = threads min accountingFiles.size
+
+    if (verbose && t < threads)
+      Console.err.println(
+        // TODO localize
+        s"""there are only $t files, downgrading $threads to $t threads"""
+      )
+
+    t -> fs2.Strategy.fromFixedDaemonPool(t)
+  }
 }
 
 object Config {
