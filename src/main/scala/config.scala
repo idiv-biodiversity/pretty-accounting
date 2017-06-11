@@ -1,8 +1,10 @@
 package grid
 
+import language.higherKinds
+
 import cats.implicits._
 import enumeratum._
-import fs2.Strategy
+import fs2.{Strategy, Stream}
 import java.nio.file.{Path, Paths}
 
 sealed abstract class Category extends EnumEntry
@@ -27,6 +29,31 @@ case class Config(accountingFiles: Seq[Path] = Nil,
   /** Optionally returns the interval from start to end. */
   def interval: Option[Interval] =
     (start, end).mapN(_ to _)
+
+  /** Maps a stream and optionally prints progress.
+    *
+    * Progress is printed every 10000 items. If the `progress` flag is not set, `s.map(f)` is all
+    * that will be done.
+    */
+  def mapWithProgress[F[_], A, B](s: Stream[F, A], file: Path)(f: A => B): Stream[F, B] = {
+    if (!progress) {
+      // simple case, no progress
+      s.map(f)
+    } else {
+      // TODO make niterations costumizable: [--progress [uint32]], scopt can't
+      val niterations = 10000
+
+      // TODO better way to do this? maybe some fs2 way
+      // display index every once in a while
+      s.zipWithIndex map { case (a, index) =>
+        if (index % niterations === 0) {
+          Console.err.println(s"""[${Thread.currentThread.getName}] [i=$index] $file""")
+        }
+
+        f(a)
+      }
+    }
+  }
 
   /** Returns true if the job has been started between the start and end dates.
     *
