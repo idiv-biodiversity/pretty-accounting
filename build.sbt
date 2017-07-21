@@ -3,23 +3,24 @@ enablePlugins(GitVersioning)
 
 name := "pretty-accounting"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.4"
 
-crossScalaVersions := Seq("2.11.11", "2.12.2")
+crossScalaVersions := Seq("2.11.11", "2.12.4")
 
 buildInfoKeys := Seq[BuildInfoKey](name, version)
 
 buildInfoPackage := "grid"
 
 libraryDependencies ++= Seq (
-  "com.itextpdf"             %  "itextpdf"      % "5.5.11",
+  "com.itextpdf"             %  "itextpdf"      % "5.5.12",
   "com.github.wookietreiber" %% "scala-chart"   % "0.5.1",
   "com.github.nscala-time"   %% "nscala-time"   % "2.16.0",
-  "co.fs2"                   %% "fs2-core"      % "0.9.6",
-  "co.fs2"                   %% "fs2-io"        % "0.9.6",
-  "co.fs2"                   %% "fs2-cats"      % "0.3.0",
-  "com.github.scopt"         %% "scopt"         % "3.5.0",
-  "org.specs2"               %% "specs2-core"   % "3.8.9" % "test"
+  "co.fs2"                   %% "fs2-core"      % "0.9.7",
+  "co.fs2"                   %% "fs2-io"        % "0.9.7",
+  "co.fs2"                   %% "fs2-cats"      % "0.4.0",
+  "com.github.scopt"         %% "scopt"         % "3.7.0",
+  "org.specs2"               %% "specs2-core"   % "4.0.1" % "test"
+>>>>>>> cf2c36a... fixup build
 )
 
 initialCommands in Compile += """
@@ -57,7 +58,7 @@ scalastyleConfig := file(".scalastyle-config.xml")
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 
-compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value
+compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.autoImport.scalastyle.in(Compile).toTask("").value
 
 (compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
 
@@ -115,7 +116,10 @@ install := {
     Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING)
   }
 
-  IO.copy(Seq(j -> p / "share" / name.value / (name.value + ".jar")), overwrite = true)
+  IO.copyFile(
+    sourceFile = j,
+    targetFile = p / "share" / name.value / (name.value + ".jar")
+  )
 }
 
 install := (install dependsOn scripts).value
