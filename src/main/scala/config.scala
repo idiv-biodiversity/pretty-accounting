@@ -13,7 +13,7 @@ case class Config(accountingFiles: Seq[Path] = Nil,
 
   /** Optionally returns the interval from start to end. */
   def interval: Option[Interval] =
-    (start |@| end) map { _ to _ }
+    (start, end).mapN(_ to _)
 
   /** Returns true if the job has been started between the start and end dates.
     *
