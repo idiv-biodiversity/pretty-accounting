@@ -3,10 +3,23 @@ package grid
 import java.nio.file.{Path, Paths}
 
 import cats.implicits._
+import enumeratum._
+
+sealed abstract class Category extends EnumEntry
+object Category extends Enum[Category] {
+  val values = findValues
+
+  def isDefinedAt(name: String): Boolean =
+    lowerCaseNamesToValuesMap isDefinedAt name
+
+  case object Department extends Category
+  case object Project extends Category
+}
 
 case class Config(accountingFiles: Seq[Path] = Nil,
                   start: Option[DateTime] = None,
                   end: Option[DateTime] = None,
+                  category: Option[Category] = None,
                   progress: Boolean = false,
                   verbose: Boolean = false,
                   threads: Int = 1) {
@@ -36,12 +49,6 @@ object Config {
   def parser(name: String) = new scopt.OptionParser[Config](name) {
     head(name, BuildInfo.version)
 
-    opt[Seq[Path]]('f', "file")
-      .required()
-      .valueName("file1,file2...")
-      .action((x, c) => c.copy(accountingFiles = x))
-      .text("accounting files to include")
-
     opt[DateTime]('s', "start")
       .valueName("2016-01-01")
       .action((x, c) => c.copy(start = Some(x)))
@@ -51,6 +58,15 @@ object Config {
       .valueName("2017-01-01")
       .action((x, c) => c.copy(end = Some(x)))
       .text("jobs started before this date")
+
+    opt[String]('g', "groupby")
+      .valueName("category")
+      .validate(x =>
+        if (Category.lowerCaseNamesToValuesMap.isDefinedAt(x)) success
+        else failure(s"unknown category: $x")
+      )
+      .action((x, c) => c.copy(category = Category.withNameLowercaseOnlyOption(x)))
+      .text("group by category, categories: department, project")
 
     opt[Unit]("progress")
       .action((_, c) => c.copy(progress = true))
@@ -64,6 +80,11 @@ object Config {
       .valueName(sys.runtime.availableProcessors.toString)
       .action((x, c) => c.copy(threads = x))
       .text("use at most CPUs for concurrent/parallel processing")
+
+    arg[Path]("file...")
+      .unbounded()
+      .action((x, c) => c.copy(accountingFiles = c.accountingFiles :+ x))
+      .text("accounting files to include")
 
     help("help").text("prints this usage text")
   }

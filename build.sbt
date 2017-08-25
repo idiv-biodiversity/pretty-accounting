@@ -12,6 +12,7 @@ buildInfoKeys := Seq[BuildInfoKey](name, version)
 buildInfoPackage := "grid"
 
 libraryDependencies ++= Seq (
+  "com.beachape"             %% "enumeratum"    % "1.5.12",
   "com.itextpdf"             %  "itextpdf"      % "5.5.12",
   "com.github.wookietreiber" %% "scala-chart"   % "0.5.1",
   "com.github.nscala-time"   %% "nscala-time"   % "2.16.0",
