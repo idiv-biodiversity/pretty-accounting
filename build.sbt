@@ -56,12 +56,6 @@ scalacOptions in (Compile, doc) += "-groups"
 
 scalastyleConfig := file(".scalastyle-config.xml")
 
-lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
-
-compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.autoImport.scalastyle.in(Compile).toTask("").value
-
-(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
-
 // -------------------------------------------------------------------------------------------------
 // scripts / install
 // -------------------------------------------------------------------------------------------------
