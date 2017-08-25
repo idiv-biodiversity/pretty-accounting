@@ -5,8 +5,9 @@ import cats.implicits._
 
 import fs2.interop.cats._
 
+@deprecated("use new config", "")
 trait EfficiencyApp extends AccountingApp {
-  def defaultExtension = "txt"
+  override def defaultExtension = "txt"
 
   case class ADT(jobs: Long, slots: Long, eff: Double) {
     def +(that: ADT): ADT = ADT(jobs + that.jobs, slots + that.slots, eff + that.eff)
@@ -35,7 +36,7 @@ trait EfficiencyApp extends AccountingApp {
 }
 
 object `efficiency-per-user` extends EfficiencyApp {
-  def name = "efficiency-by-user"
+  override def name = "efficiency-by-user"
 
   filtered.runFoldMap {
     job => Map(job.user.uid -> ADT(job))
@@ -45,7 +46,7 @@ object `efficiency-per-user` extends EfficiencyApp {
 }
 
 object `efficiency-per-group` extends EfficiencyApp {
-  def name = "efficiency-by-group"
+  override def name = "efficiency-by-group"
 
   filtered.runFoldMap {
     job => Map(job.user.gid -> ADT(job))
@@ -55,7 +56,7 @@ object `efficiency-per-group` extends EfficiencyApp {
 }
 
 object `efficiency-per-job` extends EfficiencyApp {
-  def name = "efficiency-by-job"
+  override def name = "efficiency-by-job"
 
   filtered.map({ job =>
     val eff = (((job.res.cputime) / job.slots / job.res.wctime) * 10000).round / 100.0

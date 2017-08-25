@@ -19,22 +19,39 @@ object Filtering extends Filtering
   */
 trait Filtering {
 
-  /** Returns the regular expression for excluding group IDs. It gets set by the system property
-    * `grid.exclude.gids`, defaults to `"root"`.
-    *
-    * @group filter-misc
-    */
-  // TODO move to config
-  def ExcludeGIDsRegex = sys.props.getOrElse("grid.exclude.gids", "root").r
-
   /** Returns the grid engine epoch start. */
   private lazy val GridEngineEpoch = new DateTime("1970-01-01T01:00:00.000+01:00")
 
-  /** Returns a function that filters jobs by their group being not in the regex.
+  /** Contains filters based on excluding jobs by their users name or group.
+    *
+    * {{{
+    * jobs filter TODO
+    * }}}
     *
     * @group filter-misc
     */
-  val gids: Regex ⇒ Job ⇒ Boolean = (exclude: Regex) ⇒ (j: Job) ⇒ exclude.unapplySeq(j.user.gid).isEmpty
+  object exclude {
+
+    def apply(j: Job)(implicit conf: Config): Boolean = {
+      gids(j) &&
+      uids(j)
+    }
+
+    /** Returns a function that filters jobs by their group.
+      *
+      * @group filter-misc
+      */
+    def gids(j: Job)(implicit conf: Config): Boolean =
+      conf.exclude.gids contains j.user.gid
+
+    /** Returns a function that filters jobs by their owner.
+      *
+      * @group filter-misc
+      */
+    def uids(j: Job)(implicit conf: Config): Boolean =
+      conf.exclude.uids contains j.user.uid
+
+  }
 
   /** Returns a function that filters jobs by whether they were successful.
     *
@@ -158,8 +175,8 @@ trait Filtering {
     *
     * @group filter-misc
     */
-  val combined: Regex ⇒ Job ⇒ Boolean = (exclude: Regex) ⇒ (j: Job) ⇒
-    gids(exclude)(j) && realJob(j)
+  def combined(j: Job)(implicit conf: Config): Boolean =
+    exclude(j) && realJob(j)
 
   /** Returns a function that returns true for all jobs.
     *

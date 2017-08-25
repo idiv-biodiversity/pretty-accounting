@@ -36,12 +36,11 @@ trait Streaming extends Parsing {
     }
   }
 
-  def jobs: Stream[Task,Job] = {
-    val exclude = ExcludeGIDsRegex
-    raw filter combined(exclude)
+  def jobs(implicit conf: Config): Stream[Task,Job] = {
+    raw filter combined
   }
 
-  def dispatched: Stream[Task,Job] =
+  def dispatched(implicit conf: Config): Stream[Task,Job] =
     jobs filter isDispatched
 
 }

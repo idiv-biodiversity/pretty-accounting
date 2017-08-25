@@ -34,27 +34,24 @@ object ChartingApp {
   }
 }
 
+@deprecated("use new config", "")
 trait ChartingApp extends AccountingApp {
   /** Returns the chart that will be saved. */
   def chart: Chart
 
-  def defaultExtension = "png"
+  override def defaultExtension = "png"
 
   def lowPercent = sys.props.getOrElse("grid.accounting.chart.pie.exclude", "0.01").toDouble
 
-  def dim = sys.props get "grid.accounting.chart.geometry" collect {
-    case ChartingApp.geometry(w,h) ⇒ w.toInt → h.toInt
-  } getOrElse 1920 → 1080
-
   extension.toLowerCase match {
-    // case "pdf" ⇒ chart.saveAsPDF(output, dim)
-    case "png" ⇒ chart.saveAsPNG(output, dim)
-    case "jpg" | "jpeg" ⇒ chart.saveAsJPEG(output, dim)
+    // case "pdf" ⇒ chart.saveAsPDF(output, conf.resolution)
+    case "png" ⇒ chart.saveAsPNG(output, conf.resolution)
+    case "jpg" | "jpeg" ⇒ chart.saveAsJPEG(output, conf.resolution)
   }
 }
 
 object `cputime-per-department` extends ChartingApp {
-  def name = "cputime-per-department"
+  override def name = "cputime-per-department"
 
   def data = {
     val cxs = filtered.runFoldMap {
@@ -73,9 +70,9 @@ object `cputime-per-department` extends ChartingApp {
 }
 
 object `cputime-per-department-per-month` extends ChartingApp {
-  def name = "cputime-per-department"
+  override def name = "cputime-per-department"
 
-  override def filtered = interval map { interval ⇒
+  override def filtered = conf.interval map { interval ⇒
     dispatched filter (started between interval)
   } getOrElse {
     dispatched
@@ -106,9 +103,9 @@ object `cputime-per-department-per-month` extends ChartingApp {
 }
 
 object `cputime-per-department-per-quarter` extends ChartingApp {
-  def name = "cputime-per-department"
+  override def name = "cputime-per-department"
 
-  override def filtered = interval map { interval ⇒
+  override def filtered = conf.interval map { interval ⇒
     dispatched filter (started between interval)
   } getOrElse {
     dispatched
@@ -137,7 +134,7 @@ object `cputime-per-department-per-quarter` extends ChartingApp {
 }
 
 object `disk-usage` extends ChartingApp {
-  def name = "disk-usage-data"
+  override def name = "disk-usage-data"
 
   def data = {
     val GBRE = """([\d.]+)G""".r
@@ -175,7 +172,7 @@ object `disk-usage` extends ChartingApp {
 }
 
 object `jobs-per-user` extends ChartingApp {
-  def name = "jobs-per-user"
+  override def name = "jobs-per-user"
 
   def data = filtered.runFoldMap {
     job => Map(job.user.uid -> 1)
@@ -190,7 +187,7 @@ object `jobs-per-user` extends ChartingApp {
 }
 
 object `slots-per-group` extends ChartingApp {
-  def name = "slots-per-group"
+  override def name = "slots-per-group"
 
   def data = filtered.runFoldMap {
     job => Map(job.acl.department -> job.perMinute(_.slots))
@@ -205,7 +202,7 @@ object `slots-per-group` extends ChartingApp {
 }
 
 object `slots-per-project` extends ChartingApp {
-  def name = "slots-per-project"
+  override def name = "slots-per-project"
 
   def data = filtered.runFoldMap {
     job => Map(job.acl.project -> job.perMinute(_.slots))
@@ -220,7 +217,7 @@ object `slots-per-project` extends ChartingApp {
 }
 
 object `slots-per-queue` extends ChartingApp {
-  def name = "slots-per-queue"
+  override def name = "slots-per-queue"
 
   def data = filtered.runFoldMap {
     job => Map(job.queue.get -> job.perMinute(_.slots))
@@ -235,12 +232,12 @@ object `slots-per-queue` extends ChartingApp {
 }
 
 object `slots-run-vs-wait` extends ChartingApp {
-  def name = "slots-run-vs-wait"
+  override def name = "slots-run-vs-wait"
 
   override def filtered = {
     val jobs = raw filter realJob filter isDispatched
 
-    interval map { interval =>
+    conf.interval map { interval =>
       jobs filter isBetween(interval)
     } getOrElse {
       jobs
@@ -268,7 +265,7 @@ object `slots-run-vs-wait` extends ChartingApp {
 }
 
 object `slots-sequential-vs-parallel` extends ChartingApp {
-  def name = "slots-seq-vs-par"
+  override def name = "slots-seq-vs-par"
 
   def data = filtered.runFoldMap {
     job => Map(SeqVsPar(job) -> job.perMinute(_.slots))
@@ -283,7 +280,7 @@ object `slots-sequential-vs-parallel` extends ChartingApp {
 }
 
 object `parallel-usage` extends ChartingApp {
-  def name = "parallel-usage"
+  override def name = "parallel-usage"
 
   def data = {
     import TimeConverter.jodaToJFreeMinute
@@ -315,16 +312,16 @@ object `parallel-usage` extends ChartingApp {
 // throughput: in slots per hour / slots per day
 /*
 object Throughput extends ChartingApp {
-  def name = "throughput"
+  override def name = "throughput"
 }
 */
 
 object `turnaroundtime` extends ChartingApp {
   implicit val numeric: Numeric[Double] = scala.math.Numeric.DoubleAsIfIntegral
 
-  def name = "turnaround-time"
+  override def name = "turnaround-time"
 
-  override def filtered = interval map { interval ⇒
+  override def filtered = conf.interval map { interval ⇒
     dispatched filter (submitted between interval)
   } getOrElse {
     dispatched
@@ -347,7 +344,7 @@ object `turnaroundtime` extends ChartingApp {
 }
 
 object `utilization` extends ChartingApp {
-  def name = "utilization"
+  override def name = "utilization"
 
   def data = filtered.runFoldMap { job =>
     job perMinute { _.slots }

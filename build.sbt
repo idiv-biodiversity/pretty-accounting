@@ -12,15 +12,17 @@ buildInfoKeys := Seq[BuildInfoKey](name, version)
 buildInfoPackage := "grid"
 
 libraryDependencies ++= Seq (
-  "com.itextpdf"             %  "itextpdf"      % "5.5.12",
-  "com.github.wookietreiber" %% "scala-chart"   % "0.5.1",
-  "com.github.nscala-time"   %% "nscala-time"   % "2.16.0",
-  "co.fs2"                   %% "fs2-core"      % "0.9.7",
-  "co.fs2"                   %% "fs2-io"        % "0.9.7",
-  "co.fs2"                   %% "fs2-cats"      % "0.4.0",
-  "com.github.scopt"         %% "scopt"         % "3.7.0",
-  "org.specs2"               %% "specs2-core"   % "4.0.1" % "test"
->>>>>>> cf2c36a... fixup build
+  "com.beachape"             %% "enumeratum"      % "1.5.12",
+  "com.itextpdf"             %  "itextpdf"        % "5.5.12",
+  "com.github.wookietreiber" %% "scala-chart"     % "0.5.1",
+  "com.github.wookietreiber" %% "scala-cli-tools" % "0.0.1",
+  "com.github.nscala-time"   %% "nscala-time"     % "2.16.0",
+  "co.fs2"                   %% "fs2-core"        % "0.9.7",
+  "co.fs2"                   %% "fs2-io"          % "0.9.7",
+  "co.fs2"                   %% "fs2-cats"        % "0.4.0",
+  "com.github.scopt"         %% "scopt"           % "3.7.0",
+  "com.github.pureconfig"    %% "pureconfig"      % "0.8.0",
+  "org.specs2"               %% "specs2-core"     % "4.0.1" % "test"
 )
 
 initialCommands in Compile += """
