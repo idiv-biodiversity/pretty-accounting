@@ -46,6 +46,7 @@ object cputime extends App with Accounting with CLI {
 
         case None =>
           // TODO if uncategorized or only one category left, don't print table
+          // TODO localize
           val f = (_: Job) => "uncategorized"
           f
       }
