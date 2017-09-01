@@ -35,6 +35,7 @@ case class Config(accountingFiles: Seq[Path] = Nil,
                   end: Option[DateTime] = None,
                   category: Option[Category] = None,
                   progress: Boolean = false,
+                  resolution: (Int, Int) = (1920, 1080),
                   verbose: Boolean = false,
                   threads: Int = 1) {
 
@@ -113,6 +114,8 @@ object Config {
   implicit val dateRead: scopt.Read[DateTime] =
     scopt.Read.reads(_.toDateTime)
 
+  private val resolutionRegex = """(\d+)x(\d+)""".r
+
   def parser(name: String) = new scopt.OptionParser[Config](name) {
     head(name, BuildInfo.version)
 
@@ -143,6 +146,20 @@ object Config {
       .text("group by category, categories: department, project")
 
     note("\nother options:\n")
+
+    opt[String]("resolution")
+      .valueName("1920x1080")
+      .validate(x =>
+        if (resolutionRegex.unapplySeq(x).isDefined) { success }
+        else { failure(s"invalid resolution: $x") }
+      )
+      .action((x, c) =>
+        x match {
+          case resolutionRegex(width, height) =>
+            c.copy(resolution = (width.toInt, height.toInt))
+        }
+      )
+      .text("use this output resolution for charts")
 
     opt[Int]("threads")
       .valueName(sys.runtime.availableProcessors.toString)
