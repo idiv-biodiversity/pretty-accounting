@@ -116,6 +116,13 @@ object Config {
   def parser(name: String) = new scopt.OptionParser[Config](name) {
     head(name, BuildInfo.version)
 
+    arg[Path]("file...")
+      .unbounded()
+      .action((x, c) => c.copy(accountingFiles = c.accountingFiles :+ x))
+      .text("accounting files to include")
+
+    note("\noptions:\n")
+
     opt[DateTime]('s', "start")
       .valueName("2016-01-01")
       .action((x, c) => c.copy(start = Some(x)))
@@ -135,6 +142,13 @@ object Config {
       .action((x, c) => c.copy(category = Category.withNameLowercaseOnlyOption(x)))
       .text("group by category, categories: department, project")
 
+    note("\nother options:\n")
+
+    opt[Int]("threads")
+      .valueName(sys.runtime.availableProcessors.toString)
+      .action((x, c) => c.copy(threads = x))
+      .text("use at most CPUs for concurrent/parallel processing")
+
     opt[Unit]("progress")
       .action((_, c) => c.copy(progress = true))
       .text("prints some status updates along the way")
@@ -143,16 +157,10 @@ object Config {
       .action((_, c) => c.copy(verbose = true))
       .text("prints what is going on under the hood")
 
-    opt[Int]("threads")
-      .valueName(sys.runtime.availableProcessors.toString)
-      .action((x, c) => c.copy(threads = x))
-      .text("use at most CPUs for concurrent/parallel processing")
-
-    arg[Path]("file...")
-      .unbounded()
-      .action((x, c) => c.copy(accountingFiles = c.accountingFiles :+ x))
-      .text("accounting files to include")
-
     help("help").text("prints this usage text")
+
+    version("version")
+
+    note("")
   }
 }
