@@ -11,7 +11,7 @@ trait Categorizing {
   val SeqVsPar: Job ⇒ String = (job: Job) ⇒ if (parallel(job)) "parallel".localized else "sequential".localized
 
   /** Returns a function that categorizes jobs by their project. */
-  val project: Job ⇒ String = (job: Job) ⇒ job.acl.project
+  val project: Job ⇒ String = (job: Job) ⇒ job.acl.project.getOrElse("NONE") // TODO constants! // TODO localize NONE
 
   /** Returns a function that categorizes jobs by their department. */
   val department: Job ⇒ String = (job: Job) ⇒ job.acl.department
