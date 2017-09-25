@@ -63,6 +63,6 @@ object `efficiency-per-job` extends EfficiencyApp {
     (job.slots,job.res.utime,job.res.stime,job.res.cputime,job.res.wctime,eff)
   }).runLog.unsafeRun.sortBy(_._6) foreach { x =>
     val (slots,utime,stime,cputime,wctime,eff) = x
-    println(f"""$slots%10d slots   $utime%12.2f u   $stime%12.2f s   $cputime%12.2f cpu   $wctime%10d wc   $eff%6.2f eff""")
+    println(f"""$slots%10d slots   $utime%12.2f u   $stime%12.2f s   $cputime%12.2f cpu   $wctime%12.2f wc   $eff%6.2f eff""")
   }
 }

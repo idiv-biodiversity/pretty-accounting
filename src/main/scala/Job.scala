@@ -1,227 +1,376 @@
 package grid
 
-object Job {
+abstract class Job {
 
-  object JobId {
-    def apply(s: String, t: String): JobId = {
-      val parts = s split ":"
-      JobId(job = parts(1).toInt, task = t.toInt, name = parts(0))
-    }
+  // --------------------------------------------------------------------------
+  // members - should be overridden with lazy vals
+  // --------------------------------------------------------------------------
+
+  def account: String
+  def acl: Acl
+  def id: JobId
+  def node: Option[String]
+  def parallelEnvironment: Option[String]
+  def parallelTaskId: Option[String]
+  def priority: Double
+  def queue: Option[String]
+  def res: ResourceUsage
+  def resReq: Option[String]
+  def reservation: Option[Reservation]
+  def slots: Int
+  def status: Status
+  def time: Time
+  def user: User
+
+  // --------------------------------------------------------------------------
+  // utility functions working with members
+  // --------------------------------------------------------------------------
+
+  final def efficiency: Double = (res.utime + res.stime) / slots / res.wctime
+
+  final def perMinute[A](f: Job => A): Map[DateTime,A] = {
+    val s = time.start withSecondOfMinute 0 withMillisOfSecond 0
+    val e = time.end   withSecondOfMinute 0 withMillisOfSecond 0
+
+    val value = f(this)
+
+    (s to e).byWith(1.minute)(value)
   }
 
-  /** Represents the identity of a job.
-    *
-    * @param job ID of the job
-    * @param task ID of the task of array jobs
-    * @param name the name of the job
-    */
-  case class JobId(job: Int, task: Int, name: String)
+  final def waitPerMinute[A](f: Job => A): Map[DateTime,A] = {
+    val submission = time.submission withSecondOfMinute 0 withMillisOfSecond 0
+    val start      = time.start      withSecondOfMinute 0 withMillisOfSecond 0
 
-  object User {
-    def apply(s: String): User = {
-      val parts = s split ":"
-      User(uid = parts(1), gid = parts(0))
-    }
+    val value = f(this)
+
+    (submission to start).byWith(1.minute)(value)
   }
 
-  case class User(uid: String, gid: String)
+  // --------------------------------------------------------------------------
+  // member classes
+  // --------------------------------------------------------------------------
 
-  object Time {
-    def seconds(s: String): Time = {
-      val parts = s split ":" map { _.toLong * 1000L } map { _.toDateTime }
-      Time(submission = parts(0), start = parts(1), end = parts(2))
-    }
-
-    def milliseconds(s: String): Time = {
-      val parts = s split ":" map { _.toLong } map { _.toDateTime }
-      Time(submission = parts(0), start = parts(1), end = parts(2))
-    }
+  abstract class Acl {
+    def department: String
+    def project: Option[String]
   }
 
-  case class Time(submission: DateTime, start: DateTime, end: DateTime) {
-
-    /** Returns the waiting time interval. */
-    def waiting: Interval = submission to start
-
-    /** Returns the running time interval. */
-    def running: Interval = start to end
-
-    /** Returns the turnaround time interval. */
-    def turnaround: Interval = submission to end
-
+  /** The identity of the job. */
+  abstract class JobId {
+    def job: Int
+    def task: Int
+    def name: String
   }
 
-  object Status {
-    def apply(s: String): Status = {
-      val parts = s split ":" map { _.toInt }
-      Status(grid = parts(0), script = parts(1))
-    }
+  abstract class Reservation {
+    def id: Int
+    def submission: Long
   }
 
-  case class Status(grid: Int, script: Int) {
-    def successful = grid == 0 && script == 0
-    def failed = ! successful
+  abstract class ResourceUsage {
+    /** Returns the wallclock time in seconds. */
+    def wctime: Double
+
+    /** Returns the user time in seconds. */
+    def utime: Double
+
+    /** Returns the system time in seconds. */
+    def stime: Double
+
+    /** Returns the maximum resident set size. */
+    def maxrss: Double = ???
+
+    /** Returns the integral shared memory size. */
+    def ixrss: Long = ???
+
+    // TODO what is this and when is it used?
+    // def ismrss: Long
+
+    /** Returns the integral unshared data size. */
+    def idrss: Long = ???
+
+    /** Returns the integral unshared stack size. */
+    def isrss: Long = ???
+
+    /** Returns the number of page reclaims. */
+    def minflt: Long = ???
+
+    /** Returns the number of page faults. */
+    def majflt: Long = ???
+
+    /** Returns the number of swaps. */
+    def nswap: Long = ???
+
+    /** Returns the number of block input operations. */
+    def inblock: Long = ???
+
+    /** Returns the number of block output operations. */
+    def oublock: Long = ???
+
+    /** Returns the number of messages sent. */
+    def msgsnd: Long = ???
+
+    /** Returns the number of messages received. */
+    def msgrcv: Long = ???
+
+    /** Returns the number of signals received. */
+    def nsignals: Long = ???
+
+    /** Returns the number of voluntary context switches. */
+    def nvcsw: Long = ???
+
+    /** Returns the number of involuntary context switches. */
+    def nivcsw: Long = ???
+
+    /** Returns the time spent on cpu in seconds. */
+    def cputime: Double
+
+    /** Returns the integral memory usage in Gbytes cpu seconds. */
+    def mem: Double
+
+    /** Returns the maximum vmem size in bytes. */
+    def maxvmem: Long
+
+    /** Returns the amount of data transferred in input/output operations. */
+    def io: Double
+
+    /** Returns the io wait time in seconds. */
+    def iow: Double
+
+    /** Returns the number of context switches, both voluntary and involuntary. */
+    final def ncsw: Long = nvcsw + nivcsw
   }
 
-  object ResourceUsage {
-    def apply(s: String, cpu: String, mem: String, maxvmem: String, io: String, iow: String): ResourceUsage = {
-      val parts = s split ":"
-      ResourceUsage(
-        wctime    = parts(0).replaceAll(",",".").toDouble.round,
-        utime     = parts(1).replaceAll(",",".").toDouble,
-        stime     = parts(2).replaceAll(",",".").toDouble,
-        maxrss    = parts(3).replaceAll(",",".").toDouble,
-        ixrss     = parts(4).toLong,
-//        ismrss    = parts(5).toLong,
-        idrss     = parts(6).toLong,
-        isrss     = parts(7).toLong,
-        minflt    = parts(8).toLong,
-        majflt    = parts(9).toLong,
-        nswap     = parts(10).toLong,
-        inblock   = parts(11).replaceAll(",",".").toDouble.round,
-        oublock   = parts(12).toLong,
-        msgsnd    = parts(13).toLong,
-        msgrcv    = parts(14).toLong,
-        nsignals  = parts(15).toLong,
-        nvcsw     = parts(16).toLong,
-        nivcsw    = parts(17).toLong,
-        cputime   = cpu.replaceAll(",",".").toDouble,
-        mem       = mem.replaceAll(",",".").toDouble,
-        maxvmem   = maxvmem.replaceAll(",",".").toDouble.round,
-        io        = io.replaceAll(",",".").toDouble,
-        iow       = iow.replaceAll(",",".").toDouble
-      )
-    }
+  abstract class Status {
+    def grid: Int
+    def script: Int
+
+    final def successful = grid == 0 && script == 0
+    final def failed = ! successful
   }
 
-  /**
-    *
-    * @param  wctime      wallclock time in seconds
-    * @param  utime       user time
-    * @param  stime       system time
-    * @param  maxrss      maximum resident set size
-    * @param  ixrss       integral shared memory size
-    * @param  ismrss
-    * @param  idrss       integral unshared data size
-    * @param  isrss       integral unshared stack size
-    * @param  minflt      page reclaims
-    * @param  majflt      page faults
-    * @param  nswap       swaps
-    * @param  inblock     block input operations
-    * @param  oublock     block output operations
-    * @param  msgsnd      messages sent
-    * @param  msgrcv      messages received
-    * @param  nsignals    signals received
-    * @param  nvcsw       voluntary context switches
-    * @param  nivcsw      involuntary context switches
-    * @param  cputime     cpu time usage in seconds
-    * @param  mem         integral memory usage in Gbytes cpu seconds
-    * @param  maxvmem     maximum vmem size in bytes
-    * @param  io          amount of data transferred in input/output operations
-    * @param  iow         io wait time in seconds
-    */
-  case class ResourceUsage (
-      wctime: Long,
-      utime: Double,
-      stime: Double,
-      maxrss: Double,
-      ixrss: Long,
-//      ismrss: Long,
-      idrss: Long,
-      isrss: Long,
-      minflt: Long,
-      majflt: Long,
-      nswap: Long,
-      inblock: Long,
-      oublock: Long,
-      msgsnd: Long,
-      msgrcv: Long,
-      nsignals: Long,
-      nvcsw: Long,
-      nivcsw: Long,
-      cputime: Double,
-      mem: Double,
-      maxvmem: Long,
-      io: Double,
-      iow: Double
-    ) {
+  abstract class Time {
+    def submission: DateTime
+    def start: DateTime
+    def end: DateTime
 
-    /** Returns the number of context switches, voluntary and involuntary. */
-    def ncsw = nvcsw + nivcsw
+    final def waiting: Interval = submission to start
+    final def running: Interval = start to end
+    final def turnaround: Interval = submission to end
   }
 
-  object Acl {
-    def apply(s: String): Acl = {
-      val parts = s split ":"
-      Acl(department = parts(1), project = parts(0))
-    }
+  abstract class User {
+    def uid: String
+    def gid: String
   }
-
-  case class Acl(department: String, project: String)
-
-  object Reservation {
-    def apply(s: String): Option[Reservation] = {
-      val parts = s split ":"
-
-      val rid   = parts(0).toInt
-      val rst   = parts(1).toLong
-
-      (rid + rst) match {
-        case 0 ⇒ None
-        case _ ⇒ Some (
-          Reservation(id = rid, submission = rst)
-        )
-      }
-    }
-  }
-
-  case class Reservation(id: Int, submission: Long)
 
 }
 
-import Job._
+object Job {
+  private val UNKNOWN = "UNKNOWN"
+  private val NONE    = "NONE"
 
-case class Job (
-    queue: Option[String],
-    node: Option[String],
-    user: User,
-    id: JobId,
-    account: String,
-    priority: Double,
-    time: Time,
-    status: Status,
-    res: ResourceUsage,
-    acl: Acl,
-    parallelEnvironment: Option[String],
-    slots: Int,
-    resReq: Option[String],
-    parallelTaskId: Option[String],
-    reservation: Option[Reservation]
-  ) {
+  trait Indexed {
 
-  /** Returns the efficiency.
-    *
-    * This value is calculated with the assumption that the job did not use more cores than
-    * requested.
-    */
-  def efficiency: Double = (res.utime + res.stime) / slots / res.wctime
+    self: Job =>
 
-  def perMinute[A](f: Job => A): Map[DateTime,A] = {
-    val start = time.start withSecondOfMinute 0
-    val end   = time.end   withSecondOfMinute 0
+    trait Base {
+      def queue: Int
+      def node: Int
+      def gid: Int
+      def uid: Int
+      def name: Int
+      def job: Int
+      def acc: Int
+      def prio: Int
+      def tsub: Int
+      def tstart: Int
+      def tend: Int
+      def stfail: Int
+      def stexit: Int
+      def ruwc: Int
+      def ruutime: Int
+      def rustime: Int
+      def rumrss: Int
+      def ruixrss: Int
+      def ruismrs: Int
+      def ruidrss: Int
+      def ruisrss: Int
+      def rumiflt: Int
+      def rumaflt: Int
+      def runswap: Int
+      def ruinblk: Int
+      def ruoublk: Int
+      def rumsgsn: Int
+      def rumsgrc: Int
+      def runsig: Int
+      def runvcsw: Int
+      def runicsw: Int
+      def aclproj: Int
+      def acldep: Int
+      def pe: Int
+      def slots: Int
+      def task: Int
+      def cpu: Int
+      def mem: Int
+      def io: Int
+      def req: Int
+      def iow: Int
+      def peid: Int
+      def maxvmem: Int
+    }
 
-    val value = f(this)
+    type Index <: Base
 
-    start to end by 1.minute mapValue { value }
+    def index: Index
+
+    protected def parts: Array[String]
+
+    lazy val account = parts(index.acc)
+
+    object acl extends Acl {
+      lazy val department = parts(index.acldep)
+      lazy val project = parts(index.aclproj) match {
+        case NONE    => None
+        case project => Some(project)
+      }
+    }
+
+    object id extends JobId {
+      lazy val name = parts(index.name)
+      lazy val job  = parts(index.job).toInt
+      lazy val task = parts(index.task).toInt
+    }
+
+    lazy val node = parts(index.node) match {
+      case UNKNOWN => None
+      case node    => Some(node)
+    }
+
+    lazy val parallelEnvironment = parts(index.pe) match {
+      case NONE => None
+      case pe   => Some(pe)
+    }
+
+    lazy val parallelTaskId = parts(index.peid) match {
+      case NONE => None
+      case s    => Some(s)
+    }
+
+    lazy val priority = parts(index.prio).toDouble
+
+    lazy val queue = parts(index.queue) match {
+      case UNKNOWN => None
+      case queue => Some(queue)
+    }
+
+    lazy val resReq = parts(index.req) match {
+      case NONE => None
+      case s    => Some(s)
+    }
+
+    lazy val slots = parts(index.slots).toInt
+
+    object status extends Status {
+      lazy val grid = parts(index.stfail).toInt
+      lazy val script = parts(index.stexit).toInt
+    }
+
+    object user extends User {
+      lazy val uid = parts(index.uid)
+      lazy val gid = parts(index.gid)
+    }
   }
 
-  def waitPerMinute[A](f: Job => A): Map[DateTime,A] = {
-    val submission = time.submission withSecondOfMinute 0
-    val start      = time.start      withSecondOfMinute 0
+  object Indexed {
+    object Memory {
+      trait A {
+        self: Job with Indexed =>
+        object res extends ResourceUsage {
+          lazy val wctime  = parts(index.ruwc).replaceAll(",", ".").toDouble
+          lazy val utime   = parts(index.ruutime).replaceAll(",", ".").toDouble
+          lazy val stime   = parts(index.rustime).replaceAll(",", ".").toDouble
+          lazy val cputime = parts(index.cpu).replaceAll(",", ".").toDouble
+          lazy val mem     = parts(index.mem).replaceAll(",", ".").toDouble
+          lazy val io      = parts(index.io).replaceAll(",", ".").toDouble
+          lazy val iow     = parts(index.iow).replaceAll(",", ".").toDouble
+          lazy val maxvmem = (parts(index.maxvmem).replaceAll(",", ".").toDouble * 1000).round
+        }
+      }
 
-    val value = f(this)
+      trait B {
+        self: Job with Indexed =>
+        object res extends ResourceUsage {
+          lazy val wctime  = parts(index.ruwc).replaceAll(",", ".").toDouble
+          lazy val utime   = parts(index.ruutime).replaceAll(",", ".").toDouble
+          lazy val stime   = parts(index.rustime).replaceAll(",", ".").toDouble
+          lazy val cputime = parts(index.cpu).replaceAll(",", ".").toDouble
+          lazy val mem     = parts(index.mem).replaceAll(",", ".").toDouble
+          lazy val io      = parts(index.io).replaceAll(",", ".").toDouble
+          lazy val iow     = parts(index.iow).replaceAll(",", ".").toDouble
+          lazy val maxvmem = parts(index.maxvmem).replaceAll(",", ".").toLong
+        }
+      }
+    }
 
-    submission to start by 1.minute mapValue { value }
+    object Reservation {
+      trait N {
+        self: Job with Indexed =>
+        final override def reservation = None
+      }
+
+      trait Y {
+        self: Job with Indexed =>
+
+        trait ReservationIndex {
+          self: Base =>
+          def arid: Int
+          def arsub: Int
+        }
+
+        type Index = Base with ReservationIndex
+
+        lazy val reservation: Option[Reservation] = {
+          val xid = parts(index.arid).toInt
+          val s = parts(index.arsub).toLong
+
+          if (xid > 0)
+            Some(new Reservation {
+              val id = xid
+              val submission = s
+            })
+            else
+              None
+        }
+      }
+    }
+
+    object Time {
+      def seconds(s: String): DateTime = {
+        (s.toLong * 1000L).toDateTime
+      }
+
+      def milliseconds(s: String): DateTime = {
+        s.toLong.toDateTime
+      }
+
+      trait Seconds {
+        self: Job with Indexed =>
+        object time extends Time {
+          lazy val submission = seconds(parts(index.tsub))
+          lazy val start = seconds(parts(index.tstart))
+          lazy val end = seconds(parts(index.tend))
+        }
+      }
+
+      trait Millis {
+        self: Job with Indexed =>
+        object time extends Time {
+          lazy val submission = milliseconds(parts(index.tsub))
+          lazy val start = milliseconds(parts(index.tstart))
+          lazy val end = milliseconds(parts(index.tend))
+        }
+      }
+    }
   }
-
 }
