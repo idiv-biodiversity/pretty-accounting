@@ -1,3 +1,5 @@
+import cats.Monoid
+import fs2._
 import scala.collection.GenTraversableOnce
 import org.jfree.data.time.RegularTimePeriod
 import org.jfree.data.time.TimeSeries
@@ -12,8 +14,8 @@ package object grid extends com.github.nscala_time.time.Imports {
   }
 
   implicit class RichCollectionOfTuple2s[A, B](val self: GenTraversableOnce[(A, B)]) extends AnyVal {
-    def toMinuteTimeSeries(name: Comparable[_] = "")(implicit eva: A => RegularTimePeriod, numb: Numeric[B]): TimeSeries = {
-      self.foldLeft(new TimeSeries(name)) { case (series,(time,value)) =>
+    def toMinuteTimeSeries(name: String)(implicit eva: A => RegularTimePeriod, numb: Numeric[B]): TimeSeries = {
+      self.foldLeft(new TimeSeries(name)) { case (series, (time, value)) =>
         series.add(time, numb.toDouble(value), false)
         series
       }
@@ -35,16 +37,9 @@ package object grid extends com.github.nscala_time.time.Imports {
     }
   }
 
-  // ------------------------------------------------------------------------------------------------
-  // localization string wrapper
-  // ------------------------------------------------------------------------------------------------
-
-  implicit class BundleString(s: String) {
-    def localized = try {
-      java.util.ResourceBundle getBundle "PABundle" getString s
-    } catch {
-      case _ : Exception ⇒ s
-    }
+  implicit class RichStream[A](val self: Stream[Task, A]) extends AnyVal {
+    def runFoldMonoid(implicit M: Monoid[A]): Task[A] =
+      self.runFold(M.empty)(M.combine)
   }
 
   object thread {

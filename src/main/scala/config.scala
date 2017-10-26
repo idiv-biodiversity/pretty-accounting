@@ -59,15 +59,6 @@ final case class Config private (
   def interval: Option[Interval] =
     (start, end).mapN(_ to _)
 
-  /** Returns true if the job has been started between the start and end dates.
-    *
-    * If start is not given, the beginning of the universe is assumed. If end
-    * is not given, the end of the universe is assumed.
-    */
-  def startedBetween(job: Job): Boolean =
-    start.fold(true)(job.time.start >= _) &&
-      end.fold(true)(job.time.start < _)
-
   /** Returns the amount of threads and the strategy for parallel execution.
     *
     * The amount of threads used will be downgraded if there are fewer files

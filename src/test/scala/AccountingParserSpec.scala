@@ -111,7 +111,7 @@ class AccountingParserSpec extends Specification with Parsing { def is = s2"""
   // -----------------------------------------------------------------------------------------------
 
   def e(p: Parser, line: String): Vector[Job] =
-    p.parse(Stream(line)).runLog.unsafeRun
+    p.parse(Stream(line)).runLog.unsafeRun()
 
   def eyes(p: Parser, line: String) =
     e(p, line) must not be empty

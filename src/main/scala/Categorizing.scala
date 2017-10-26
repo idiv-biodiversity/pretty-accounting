@@ -5,13 +5,13 @@ import grid.Filtering._
 
 object Categorizing extends Categorizing
 
-trait Categorizing {
+trait Categorizing extends Internationalization {
 
   /** Returns a function that categorizes jobs by whether they are sequential or parallel. */
   val SeqVsPar: Job ⇒ String = (job: Job) ⇒ if (parallel(job)) "parallel".localized else "sequential".localized
 
   /** Returns a function that categorizes jobs by their project. */
-  val project: Job ⇒ String = (job: Job) ⇒ job.acl.project.getOrElse("NONE") // TODO constants! // TODO localize NONE
+  val project: Job ⇒ String = (job: Job) ⇒ job.acl.project.getOrElse("unknown".localized)
 
   /** Returns a function that categorizes jobs by their department. */
   val department: Job ⇒ String = (job: Job) ⇒ job.acl.department
@@ -35,5 +35,19 @@ trait Categorizing {
 
   /** Returns a function that categorizes jobs by their GID. */
   val group: Job ⇒ String = (job: Job) ⇒ job.user.gid
+
+  def categoryF(implicit conf: Config): Job ⇒ String =
+    conf.category match {
+      case Some(Category.Department) ⇒
+        (job: Job) ⇒ job.acl.department
+
+      case Some(Category.Project) ⇒
+        // TODO cache unknown
+        (job: Job) ⇒ job.acl.project.getOrElse("unknown".localized)
+
+      case None ⇒
+        // TODO cache all
+        (_: Job) ⇒ "all".localized
+    }
 
 }

@@ -3,8 +3,15 @@ package grid
 import language.implicitConversions
 
 object Accounting extends Accounting
-trait Accounting extends Imports with Implicits with scalax.chart.module.Charting
-  with Categorizing with Filtering with Streaming with RichTime
+trait Accounting
+    extends Imports
+    with Implicits
+    with scalax.chart.module.Charting
+    with Categorizing
+    with Filtering
+    with Streaming
+    with RichTime
+    with Internationalization
 
 object Implicits extends Implicits
 trait Implicits extends FileImplicits

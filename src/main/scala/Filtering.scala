@@ -32,24 +32,22 @@ trait Filtering {
     */
   object exclude {
 
-    def apply(j: Job)(implicit conf: Config): Boolean = {
-      gids(j) &&
-      uids(j)
-    }
+    def apply(j: Job)(implicit conf: Config): Boolean =
+      gids(j) && uids(j)
 
     /** Returns a function that filters jobs by their group.
       *
       * @group filter-misc
       */
     def gids(j: Job)(implicit conf: Config): Boolean =
-      conf.exclude.gids contains j.user.gid
+      !(conf.exclude.gids contains j.user.gid)
 
     /** Returns a function that filters jobs by their owner.
       *
       * @group filter-misc
       */
     def uids(j: Job)(implicit conf: Config): Boolean =
-      conf.exclude.uids contains j.user.uid
+      !(conf.exclude.uids contains j.user.uid)
 
   }
 
@@ -113,9 +111,21 @@ trait Filtering {
     val before: DateTime ⇒ Job ⇒ Boolean = (date: DateTime) ⇒ (j: Job) ⇒
       j.time.start isBefore date
 
-    /** Returns a function that filters jobs by whether they were started somewhere in the interval. */
-    val between: Interval ⇒ Job ⇒ Boolean = (interval: Interval) ⇒ (j: Job) ⇒
+    /** Returns a function that filters jobs by whether they were started
+      * somewhere in the interval.
+      */
+    def between(interval: Interval): Job ⇒ Boolean = (j: Job) ⇒
       started.after(interval.start)(j) && started.before(interval.end)(j)
+
+    /** Returns a function that filters jobs by whether they were started
+      * somewhere in the interval.
+      *
+      * If start is not given, the beginning of the universe is assumed. If end
+      * is not given, the end of the universe is assumed.
+      */
+    def between(config: Config): Job ⇒ Boolean = (job: Job) ⇒
+      config.start.fold(true)(job.time.start >= _) &&
+      config.end.fold(true)(job.time.start < _)
 
   }
 
@@ -162,8 +172,13 @@ trait Filtering {
     *
     * @group filter-misc
     */
-  val realJob: Job ⇒ Boolean = (j: Job) ⇒
-    j.queue.nonEmpty && j.node.nonEmpty  && (j.time.submission != GridEngineEpoch)
+  val realJob: Job ⇒ Boolean = (j: Job) ⇒ {
+    j.queue.nonEmpty &&
+    j.node.nonEmpty &&
+    j.time.submission != GridEngineEpoch &&
+    j.time.start != GridEngineEpoch &&
+    j.time.end != GridEngineEpoch
+  }
 
   /** Returns a function that filters jobs by their wallclock time being positive.
     *
@@ -171,14 +186,14 @@ trait Filtering {
     */
   val isDispatched: Job ⇒ Boolean = (j: Job) ⇒ j.res.wctime > 0
 
-  /** Returns a function that applies both `gids` and `realJob`.
+  /** Returns a function that applies `realJob`, `exclude` and `started.between`.
     *
     * @group filter-misc
     */
   def combined(j: Job)(implicit conf: Config): Boolean =
-    exclude(j) && realJob(j)
+    realJob(j) && exclude(j) && started.between(conf)(j)
 
-  /** Returns a function that returns true for all jobs.
+  /** Returns a function that returns `true` for all jobs.
     *
     * @group filter-misc
     */
