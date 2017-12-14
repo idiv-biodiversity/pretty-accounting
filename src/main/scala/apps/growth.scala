@@ -16,6 +16,8 @@ import scala.collection.JavaConverters._
 // TODO localize
 object growth extends AccAppNG("pa-growth") with Streamy {
 
+  self =>
+
   // --------------------------------------------------------------------------
   // data
   // --------------------------------------------------------------------------
@@ -41,8 +43,6 @@ object growth extends AccAppNG("pa-growth") with Streamy {
   override
   def r(stream: Stream[Task, Data])(implicit conf: Config): Unit = {
     val data: Data = stream.runFoldMonoid.unsafeRun()
-
-    data.mapValues(_.size) foreach println // TODO remove
 
     import TimeConverter.jodaToJFreeMonth
 
@@ -81,7 +81,13 @@ object growth extends AccAppNG("pa-growth") with Streamy {
         val category = dataset.getSeriesKey(i).toString
         val name = s"$category growth"
 
-        regression(dataset, name, series = i)._1 foreach regressions.addSeries
+        regression(dataset, name, series = i) match {
+          case Right(x) =>
+            x._1 foreach regressions.addSeries
+
+          case Left(message) if conf.verbose =>
+            Console.err.println(s"""[${self.name}] [$category] $message""")
+        }
       }
 
       chart.plot.setDataset(1, regressions)
@@ -94,41 +100,50 @@ object growth extends AccAppNG("pa-growth") with Streamy {
     }
 
     def chartb = data map { kv =>
-      val project = kv._1
+      val category = kv._1
       val data = kv._2
 
-      val wctime = data.mapValues(_ / theoreticalMaxCPUSecondsPerMonth(project)).toTimeSeries("resource usage")
+      val wctime = data.mapValues(_ / theoreticalMaxCPUSecondsPerMonth(category)).toTimeSeries("resource usage")
 
       val chart = XYLineChart(wctime)
-      chart.title = s"resource usage $project"
+      chart.title = s"resource usage $category"
       // TODO make available in scala-chart
       val na = new NumberAxis("")
       na.setNumberFormatOverride(NumberFormat.getPercentInstance)
       // TODO make available in scala-chart
       chart.plot.peer.setRangeAxis(na)
 
-      // TODO make available in scala-chart
-      val regressions = new XYSeriesCollection()
-      regressions.addSeries(new XYSeries("dummy"))
-      val (regs, subtitles) = regression(chart.plot.getDataset, "growth", series = 0)
-      regs foreach regressions.addSeries
-      chart.plot.setDataset(1, regressions)
+      regression(chart.plot.getDataset, "growth", series = 0) match {
+        case Right(x) =>
+          // TODO make available in scala-chart
+          val regressions = new XYSeriesCollection()
+          regressions.addSeries(new XYSeries("dummy"))
 
-      for (subtitle <- subtitles)
-        // TODO make available in scala-chart
-        chart.subtitles += new TextTitle(subtitle)
+          chart.plot.setDataset(1, regressions)
 
-      // TODO make available in scala-chart
-      val l = chart.plot.getLegendItems.iterator.asInstanceOf[java.util.Iterator[LegendItem]].asScala.filterNot(_.getLabel.startsWith("dummy"))
-      chart.plot.setFixedLegendItems(l.toLegendItemCollection)
+          val (regs, subtitles) = x
+          regs foreach regressions.addSeries
 
-      project -> chart
+          for (subtitle <- subtitles) {
+            // TODO make available in scala-chart
+            chart.subtitles += new TextTitle(subtitle)
+          }
+
+          // TODO make available in scala-chart
+          val l = chart.plot.getLegendItems.iterator.asInstanceOf[java.util.Iterator[LegendItem]].asScala.filterNot(_.getLabel.startsWith("dummy"))
+          chart.plot.setFixedLegendItems(l.toLegendItemCollection)
+
+        case Left(message) if conf.verbose =>
+          Console.err.println(s"""[${self.name}] [$category] $message""")
+      }
+
+      category -> chart
     }
 
     charta.saveAsPNG("/tmp/wallclock.png", conf.resolution)
 
-    for ((project, chart) <- chartb) {
-      chart.saveAsPNG(s"/tmp/wallclock-$project-percent.png", conf.resolution)
+    for ((category, chart) <- chartb) {
+      chart.saveAsPNG(s"/tmp/wallclock-$category-percent.png", conf.resolution)
     }
 
     // -----------------------------------------------------------------------------------------------
@@ -171,30 +186,38 @@ object growth extends AccAppNG("pa-growth") with Streamy {
     }
 
     // TODO make available in scala-chart
-    def regression(data: org.jfree.data.xy.XYDataset, name: String, series: Int): (List[XYSeries], List[String]) = {
-      val Array(intercept, slope) = org.jfree.data.statistics.Regression.getOLSRegression(data, series)
+    def regression(data: org.jfree.data.xy.XYDataset, name: String, series: Int)
+        : Either[String, (List[XYSeries], List[String])] = {
+      if (series >= data.getSeriesCount) {
+        Left(s"dataset with ${data.getSeriesCount} series' does not contain series number ${series}")
+      } else if (data.getItemCount(series) < 2) {
+        val key = data.getSeriesKey(series)
+        Left(s"series ${key} contains only ${data.getItemCount(series)} items, that's too few for a regression")
+      } else {
+        val Array(intercept, slope) = org.jfree.data.statistics.Regression.getOLSRegression(data, series)
 
-      val yearlyGrowth = slope * 1000 * 60 * 60 * 24 * 365
+        val yearlyGrowth = slope * 1000 * 60 * 60 * 24 * 365
 
-      val g = (1 - intercept) / slope
+        val g = (1 - intercept) / slope
 
-      val regLine = new org.jfree.data.function.LineFunction2D(intercept, slope)
+        val regLine = new org.jfree.data.function.LineFunction2D(intercept, slope)
 
-      val from = data.getXValue(series, 0)
-      val to = data.getXValue(series, data.getItemCount(0) - 1)
+        val from = data.getXValue(series, 0)
+        val to = data.getXValue(series, data.getItemCount(series) - 1)
 
-      val linear = org.jfree.data.general.DatasetUtilities.sampleFunction2DToSeries(
-        regLine,
-        from,
-        to,
-        100,
-        name
-      )
+        val linear = org.jfree.data.general.DatasetUtilities.sampleFunction2DToSeries(
+          regLine,
+          from,
+          to,
+          100,
+          name
+        )
 
-      List(linear) -> List(
-        s"yearly growth: ${(yearlyGrowth * 10000).round / 100}%",
-        s"reaching 100%: ${new java.util.Date(g.toLong)}"
-      )
+        Right(List(linear) -> List(
+          s"yearly growth: ${(yearlyGrowth * 10000).round / 100}%",
+          s"reaching 100%: ${new java.util.Date(g.toLong)}"
+        ))
+      }
     }
   }
 
