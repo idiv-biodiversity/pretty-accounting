@@ -6,6 +6,8 @@ import fs2._
 // TODO localize
 object `wallclock-per-department` extends AccAppNG("pa-wallclock-pe-department") with Streamy {
 
+  self =>
+
   // --------------------------------------------------------------------------
   // data
   // --------------------------------------------------------------------------
@@ -25,9 +27,17 @@ object `wallclock-per-department` extends AccAppNG("pa-wallclock-pe-department")
       }
     } map { job =>
       val group = job.acl.department
-      val millis = job.time.running.millis * job.slots
 
-      Map(group -> millis)
+      job.time.running match {
+        case Right(running) =>
+          Map(group -> (running.millis * job.slots))
+
+        case Left(message) =>
+          Console.err.println(
+            s"""${self.name}: ignoring job: $message"""
+          )
+          Map()
+      }
     }
   }
 

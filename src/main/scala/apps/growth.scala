@@ -33,10 +33,19 @@ object growth extends AccAppNG("pa-growth") with Streamy {
   def f(stream: Stream[Task, Job])(implicit conf: Config): Stream[Task, Data] = {
     stream map { job =>
       val date = job.time.start.toLocalDate.withDayOfMonth(1)
-      val millis = job.time.running.millis * job.slots
-      val project = job.acl.project.getOrElse("unknown".localized)
 
-      Map(project -> Map(date -> millis))
+      job.time.running match {
+        case Right(running) =>
+          val millis = running.millis * job.slots
+          val project = job.acl.project.getOrElse("unknown".localized)
+          Map(project -> Map(date -> millis))
+
+        case Left(message) =>
+          Console.err.println(
+            s"""${self.name}: ignoring job: $message"""
+          )
+          Map()
+      }
     }
   }
 

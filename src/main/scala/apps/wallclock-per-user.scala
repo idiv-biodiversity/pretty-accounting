@@ -8,6 +8,8 @@ import fs2.interop.cats._
 // TODO localize
 object `wallclock-per-user` extends AccAppNG("pa-wallclock-per-user") with Streamy {
 
+  self =>
+
   // --------------------------------------------------------------------------
   // data
   // --------------------------------------------------------------------------
@@ -27,9 +29,17 @@ object `wallclock-per-user` extends AccAppNG("pa-wallclock-per-user") with Strea
       }
     } map { job =>
       val user = job.user.uid
-      val millis = job.time.running.millis * job.slots
 
-      Map(user -> millis)
+      job.time.running match {
+        case Right(running) =>
+          Map(user -> (running.millis * job.slots))
+
+        case Left(message) =>
+          Console.err.println(
+            s"""${self.name}: ignoring job: $message"""
+          )
+          Map()
+      }
     }
   }
 

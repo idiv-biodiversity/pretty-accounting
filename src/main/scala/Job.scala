@@ -154,9 +154,26 @@ abstract class Job {
     def start: DateTime
     def end: DateTime
 
-    final def waiting: Interval = submission to start
-    final def running: Interval = start to end
-    final def turnaround: Interval = submission to end
+    final def waiting: Either[String, Interval] = try {
+      Right(submission to start)
+    } catch {
+      case e: IllegalArgumentException =>
+        Left(s"""${e.getMessage} submission=${submission} start=${start}""")
+    }
+
+    final def running: Either[String, Interval] = try {
+      Right(start to end)
+    } catch {
+      case e: IllegalArgumentException =>
+        Left(s"""${e.getMessage} start=${start} end=${end}""")
+    }
+
+    final def turnaround: Either[String, Interval] = try {
+      Right(submission to end)
+    } catch {
+      case e: IllegalArgumentException =>
+        Left(s"""${e.getMessage} submission=${submission} end=${end}""")
+    }
   }
 
   abstract class User {

@@ -6,6 +6,8 @@ import fs2._
 // TODO localize
 object `mean-wait-time` extends AccAppNG("pa-mean-wait-time") with Streamy {
 
+  self =>
+
   // --------------------------------------------------------------------------
   // data
   // --------------------------------------------------------------------------
@@ -23,9 +25,17 @@ object `mean-wait-time` extends AccAppNG("pa-mean-wait-time") with Streamy {
 
     stream map { job =>
       val category = categoryOf(job)
-      val wait = job.time.waiting.millis // .toPeriod
 
-      Map(category -> Vector(wait))
+      job.time.waiting match {
+        case Right(waiting) =>
+          Map(category -> Vector(waiting.millis))
+
+        case Left(message) =>
+          Console.err.println(
+            s"""${self.name}: ignoring job: $message"""
+          )
+          Map()
+      }
     }
   }
 
