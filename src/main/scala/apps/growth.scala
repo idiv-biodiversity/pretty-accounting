@@ -32,7 +32,7 @@ object growth extends AccAppNG("pa-growth") with Streamy {
     stream map { job =>
       val date = job.time.start.toLocalDate.withDayOfMonth(1)
       val millis = job.time.running.millis * job.slots
-      val project = job.acl.project.get
+      val project = job.acl.project.getOrElse("unknown".localized)
 
       Map(project -> Map(date -> millis))
     }

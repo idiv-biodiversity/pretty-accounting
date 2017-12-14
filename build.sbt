@@ -1,15 +1,17 @@
+// ----------------------------------------------------------------------------
+// sbt plugins
+// ----------------------------------------------------------------------------
+
 enablePlugins(BuildInfoPlugin)
 enablePlugins(GitVersioning)
 
+// ----------------------------------------------------------------------------
+// basic project settings
+// ----------------------------------------------------------------------------
+
 name := "pretty-accounting"
 
-scalaVersion := "2.12.4"
-
-crossScalaVersions := Seq("2.11.11", "2.12.4")
-
-buildInfoKeys := Seq[BuildInfoKey](name, version)
-
-buildInfoPackage := "grid"
+scalaVersion in ThisBuild := "2.12.4"
 
 libraryDependencies ++= Seq (
   "com.beachape"             %% "enumeratum"      % "1.5.12",
@@ -24,6 +26,12 @@ libraryDependencies ++= Seq (
   "com.github.pureconfig"    %% "pureconfig"      % "0.8.0",
   "org.specs2"               %% "specs2-core"     % "4.0.1" % "test"
 )
+
+fork in run := true
+
+// ----------------------------------------------------------------------------
+// console
+// ----------------------------------------------------------------------------
 
 initialCommands in Compile += """
   import cats._
@@ -44,7 +52,17 @@ initialCommands in Compile in console += """
   import grid.Accounting._
 """
 
-fork in run := true
+// ----------------------------------------------------------------------------
+// scala compiler options
+// ----------------------------------------------------------------------------
+
+scalacOptions in ThisBuild ++= Seq(
+  "-deprecation",
+  "-encoding",
+  "UTF-8",
+  "-feature",
+  "-unchecked"
+)
 
 // -------------------------------------------------------------------------------------------------
 // scaladoc
@@ -52,11 +70,27 @@ fork in run := true
 
 scalacOptions in (Compile, doc) += "-groups"
 
-// -------------------------------------------------------------------------------------------------
-// scalastyle integration
-// -------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// build info
+// ----------------------------------------------------------------------------
+
+buildInfoKeys := Seq[BuildInfoKey](name, version)
+
+buildInfoPackage := "grid"
+
+// ----------------------------------------------------------------------------
+// linting
+// ----------------------------------------------------------------------------
 
 scalastyleConfig := file(".scalastyle-config.xml")
+
+wartremoverErrors in (Compile, compile) ++= Seq(
+  Wart.ArrayEquals,
+  Wart.FinalCaseClass,
+  Wart.OptionPartial,
+  Wart.TraversableOps,
+  Wart.TryPartial
+)
 
 // -------------------------------------------------------------------------------------------------
 // scripts / install

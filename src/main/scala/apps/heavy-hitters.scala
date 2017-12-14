@@ -12,7 +12,7 @@ object `heavy-hitters` extends AccAppNG("pa-heavy-hitters") with Streamy {
   // data
   // --------------------------------------------------------------------------
 
-  case class Base(cputime: Double, wctime: Double) {
+  final case class Base(cputime: Double, wctime: Double) {
     def +(that: Base) = {
       Base(cputime = this.cputime + that.cputime, wctime = this.wctime + that.wctime)
     }

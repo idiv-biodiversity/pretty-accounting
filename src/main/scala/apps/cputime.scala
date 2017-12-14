@@ -13,7 +13,7 @@ object cputime extends AccAppNG("pa-cputime") with Streamy {
   // data
   // --------------------------------------------------------------------------
 
-  case class Base(inclusive: Double = 0.0, exclusive: Double = 0.0)
+  final case class Base(inclusive: Double = 0.0, exclusive: Double = 0.0)
 
   object Base {
     val empty = Base()

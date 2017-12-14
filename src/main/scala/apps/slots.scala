@@ -67,5 +67,5 @@ object `slots-seq-vs-par` extends AccAppNG("pa-slots-seq-vs-par") with Slotty {
 object `slots-per-queue` extends AccAppNG("pa-slots-per-queue") with Slotty {
   override
   def cat(implicit conf: Config): Job => String =
-    job => job.queue.get
+    job => job.queue.getOrElse("unknown".localized)
 }
