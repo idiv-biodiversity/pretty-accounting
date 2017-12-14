@@ -87,24 +87,49 @@ final case class Config private (
   }
 }
 
+// TODO config file path should be an option
+// TODO options like --help should not read the config file
 object Config {
 
   final case class FromFile(
-    threads: Int,
+    association: Map[String, Map[String, String]],
     exclude: Exclude,
-    association: Map[String, Map[String, String]]
+    threads: Int,
+    progress: Option[Int],
+    verbose: Boolean
   )
 
-  private val fromFile: Option[FromFile] = {
+  private val fromFile: FromFile = {
     val p = Paths.get(scala.util.Properties.userHome, ".pa.conf")
-    pureconfig.loadConfig[FromFile](p).toOption
+
+    val c = if (Files.exists(p)) {
+      pureconfig.loadConfig[FromFile](p)
+    } else {
+      pureconfig.loadConfig[FromFile]
+    }
+
+    c match {
+      case Left(failures) =>
+        for (f <- failures.toList) {
+          val loc = f.location.fold("") { loc =>
+            s"""${loc.url}:${loc.lineNumber}: """
+          }
+          Console.err.println(s"""$loc${f.description}""")
+        }
+        sys.exit(1)
+
+      case Right(config) =>
+        config
+    }
   }
 
   def empty: Config = {
     Config(
-      threads     = fromFile.map(_.threads    ).getOrElse(1),
-      exclude     = fromFile.map(_.exclude    ).getOrElse(Exclude()),
-      association = fromFile.map(_.association).getOrElse(Map())
+      association = fromFile.association,
+      exclude     = fromFile.exclude,
+      progress    = fromFile.progress,
+      threads     = fromFile.threads,
+      verbose     = fromFile.verbose
     )
   }
 
