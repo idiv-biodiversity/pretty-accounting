@@ -43,6 +43,79 @@ trait Parsing {
         case V(version) if version startsWith "6.2"  => Parser.sge62
         case V(version) if version startsWith "8.3." => Parser.uge83
         case V(version) if version startsWith "8.4." => Parser.uge84
+        case V(version) if version startsWith "8.5." => Parser.uge85
+      }
+    }
+
+    val uge85 = new Parser("Univa Grid Engine 8.5") {
+      final
+      def parse(lines: Stream[Task, String]): Stream[Task, Job] =
+        lines map { line => new J(line.split(":")) }
+
+      final
+      class J(protected val parts: Array[String])
+          extends Job
+          with Job.Indexed
+          with Job.Indexed.Memory.B
+          with Job.Indexed.Reservation.Y
+          with Job.Indexed.Time.Millis
+      {
+        object index extends Base with ReservationIndex {
+          val queue = 0
+          val node = 1
+          val gid = 2
+          val uid = 3
+          val name = 4
+          val job = 5
+          val acc = 6
+          val prio = 7
+          val tsub = 8
+          val tstart = 9
+          val tend = 10
+          val stfail = 11
+          val stexit = 12
+          val ruwc = 13
+          val ruutime = 14
+          val rustime = 15
+          val rumrss = 16
+          val ruixrss = 17
+          val ruismrs = 18
+          val ruidrss = 19
+          val ruisrss = 20
+          val rumiflt = 21
+          val rumaflt = 22
+          val runswap = 23
+          val ruinblk = 24
+          val ruoublk = 25
+          val rumsgsn = 26
+          val rumsgrc = 27
+          val runsig = 28
+          val runvcsw = 29
+          val runicsw = 30
+          val aclproj = 31
+          val acldep = 32
+          val pe = 33
+          val slots = 34
+          val task = 35
+          val cpu = 36
+          val mem = 37
+          val io = 38
+          val req = 39
+          val iow = 40
+          val peid = 41
+          val maxvmem = 42
+          val marss = 43
+          val mapss = 44
+          val x = 45
+          val delby = 46
+          val arid = 47
+          val arsub = 48
+          val subno = 49
+          val y = 50
+          val subcm = 51
+          val wallc = 52
+          val z = 53
+        }
       }
     }
 

@@ -7,6 +7,29 @@ class AccountingParserSpec extends Specification with Parsing { def is = s2"""
 
   Accounting Entry Parser Specification
 
+  UGE 8.5
+    account                                                                     ${uge85.account}
+    acl.department                                                              ${uge85.department}
+    acl.project                                                                 ${uge85.project}
+    id.job                                                                      ${uge85.jobid}
+    id.name                                                                     ${uge85.jobname}
+    id.task                                                                     ${uge85.taskid}
+    node                                                                        ${uge85.node}
+    queue                                                                       ${uge85.queue}
+    time.submission                                                             ${uge85.submission}
+    time.start                                                                  ${uge85.start}
+    time.end                                                                    ${uge85.end}
+    res.cputime                                                                 ${uge85.cputime}
+    res.io                                                                      ${uge85.io}
+    res.iow                                                                     ${uge85.iow}
+    res.maxvmem                                                                 ${uge85.maxvmem}
+    res.mem                                                                     ${uge85.mem}
+    res.stime                                                                   ${uge85.stime}
+    res.utime                                                                   ${uge85.utime}
+    res.wctime                                                                  ${uge85.wctime}
+    user.gid                                                                    ${uge85.gid}
+    user.uid                                                                    ${uge85.uid}
+
   UGE 8.4
     account                                                                     ${uge84.account}
     acl.department                                                              ${uge84.department}
@@ -154,6 +177,24 @@ class AccountingParserSpec extends Specification with Parsing { def is = s2"""
     def queue =      check { _.queue                     === Some("all.q")   }
     def gid =        check { _.user.gid                  === "group"         }
     def uid =        check { _.user.uid                  === "user"          }
+  }
+
+  object uge85 extends ParserChecker {
+    val parser = Parser.uge85
+
+    def wctime =     check { _.res.wctime                === 278.058        }
+    def utime =      check { _.res.utime                 === 272.057        }
+    def stime =      check { _.res.stime                 === 0.985          }
+    def cputime =    check { _.res.cputime               === 273.041        }
+    def io =         check { _.res.io                    === 0.78562        }
+    def iow =        check { _.res.iow                   === 0.0            }
+    def mem =        check { _.res.mem                   === 55.054984      }
+    def maxvmem =    check { _.res.maxvmem               === 1556115456L    }
+    def submission = check { _.time.submission.getMillis === 1579264793506L }
+    def start =      check { _.time.start.getMillis      === 1579346345865L }
+    def end =        check { _.time.end.getMillis        === 1579377065833L }
+
+    val entry = """all.q:node001:group:user:jobname:42:sge:10:1579264793506:1579346345865:1579377065833:0:0:278.058:272.057:0.985:1826184:0:0:0:0:154477:0:0:0:0:0:0:0:655:596:project:department:NONE:1:0:273.041:55.054984:0.785620:-U group -u user -l h_rt=172800,h_vmem=18G -pe smp 20 -binding no_job_binding 0 0 0 0 no_explicit_binding:0.000000:NONE:1556115456:0:0:NONE:NONE:51927277568:51368481792:frontend1:NONE:qsub -N jobname -t 1-67 /path/to/submit.sh /path/to/x /path/to/y 2.8.0:30720.035000:369622395"""
   }
 
   object uge84 extends ParserChecker {
