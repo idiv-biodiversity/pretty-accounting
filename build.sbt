@@ -11,7 +11,7 @@ enablePlugins(GitVersioning)
 
 name := "pretty-accounting"
 
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.10"
 
 libraryDependencies ++= Seq (
   "com.beachape"             %% "enumeratum"      % "1.5.12",
